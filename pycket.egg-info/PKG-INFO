@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: pycket
+Version: 0.1dev
+Summary: Redis sessions for Tornado
+Home-page: UNKNOWN
+Author: Diogo Baeder
+Author-email: desenvolvedor@diogobaeder.com.br
+License: BSD 2-Clause
+Description: Redis user sessions to use with Tornado server
+Keywords: pycket redis tornado session python
+Platform: UNKNOWN

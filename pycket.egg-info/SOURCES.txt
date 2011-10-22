@@ -1,0 +1,9 @@
+setup.cfg
+setup.py
+pycket/__init__.py
+pycket.egg-info/PKG-INFO
+pycket.egg-info/SOURCES.txt
+pycket.egg-info/dependency_links.txt
+pycket.egg-info/entry_points.txt
+pycket.egg-info/top_level.txt
+pycket.egg-info/zip-safe
