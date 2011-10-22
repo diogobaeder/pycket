@@ -46,7 +46,6 @@ class SessionManagerTest(TestCase):
 
         class StubHandler(SessionMixin):
             def get_secure_cookie(self, name):
-                test_case.assertEqual(name, 'PYCKET_ID')
                 self.cookie_retrieved = True
                 return 'some-id'
 
@@ -55,3 +54,10 @@ class SessionManagerTest(TestCase):
         session_manager.set('some-object', 'Some object')
 
         self.assertTrue(handler.cookie_retrieved)
+
+
+class StubHandler(SessionMixin):
+    session_id = 'session-id'
+
+    def get_secure_cookie(self, name):
+        return self.session_id
