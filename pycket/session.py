@@ -100,7 +100,8 @@ class SessionManager(object):
 
     def __create_session_id(self):
         session_id = str(uuid4())
-        self.handler.set_secure_cookie(self.SESSION_ID_NAME, session_id, None)
+        self.handler.set_secure_cookie(self.SESSION_ID_NAME, session_id,
+                                       expires_days=None, expires=None)
         return session_id
 
     def __to_dict(self, raw_session):

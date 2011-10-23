@@ -40,11 +40,10 @@ class SessionManagerTest(RedisTestCase):
                 self.cookie_set = True
                 return None
 
-            def set_secure_cookie(self, name, value, expire_days):
+            def set_secure_cookie(self, name, value, expires_days, expires):
                 test_case.assertEqual(name, 'PYCKET_ID')
                 test_case.assertIsInstance(value, basestring)
                 test_case.assertGreater(len(value), 0)
-                test_case.assertEqual(expire_days, None)
                 self.cookie_retrieved = True
 
         handler = StubHandler()
@@ -65,8 +64,8 @@ class SessionManagerTest(RedisTestCase):
                 return 'some-id'
 
         handler = StubHandler()
-        session_manager = SessionManager(handler)
-        session_manager.set('some-object', 'Some object')
+        manager = SessionManager(handler)
+        manager.set('some-object', 'Some object')
 
         self.assertTrue(handler.cookie_retrieved)
 
@@ -207,6 +206,23 @@ class SessionManagerTest(RedisTestCase):
         value = manager.get('foo', 'Default')
 
         self.assertEqual(value, 'Default')
+
+    @istest
+    def sets_session_id_to_last_a_browser_session_as_default(self):
+        test_case = self
+
+        class StubHandler(SessionMixin):
+            settings = {}
+            def get_secure_cookie(self, name):
+                return None
+
+            def set_secure_cookie(self, name, value, expires_days, expires):
+                test_case.assertIsNone(expires_days)
+                test_case.assertIsNone(expires)
+
+        handler = StubHandler()
+        manager = SessionManager(handler)
+        manager.set('some-object', 'Some object')
 
 
 class StubHandler(SessionMixin):
