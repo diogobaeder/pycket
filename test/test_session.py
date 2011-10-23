@@ -224,6 +224,66 @@ class SessionManagerTest(RedisTestCase):
         manager = SessionManager(handler)
         manager.set('some-object', 'Some object')
 
+    @istest
+    def repasses_cookies_options(self):
+        test_case = self
+
+        class StubHandler(SessionMixin):
+            settings = {
+                'pycket_cookies': {
+                    'foo': 'bar',
+                }
+            }
+            def get_secure_cookie(self, name):
+                return None
+
+            def set_secure_cookie(self, *args, **kwargs):
+                test_case.assertEqual(kwargs['foo'], 'bar')
+
+        handler = StubHandler()
+        manager = SessionManager(handler)
+        manager.set('some-object', 'Some object')
+
+    @istest
+    def uses_custom_expires_if_provided(self):
+        test_case = self
+
+        class StubHandler(SessionMixin):
+            settings = {
+                'pycket_cookies': {
+                    'expires': 'St. Neversday',
+                }
+            }
+            def get_secure_cookie(self, name):
+                return None
+
+            def set_secure_cookie(self, *args, **kwargs):
+                test_case.assertEqual(kwargs['expires'], 'St. Neversday')
+
+        handler = StubHandler()
+        manager = SessionManager(handler)
+        manager.set('some-object', 'Some object')
+
+    @istest
+    def uses_custom_expires_days_if_provided(self):
+        test_case = self
+
+        class StubHandler(SessionMixin):
+            settings = {
+                'pycket_cookies': {
+                    'expires_days': 'St. Neversday',
+                }
+            }
+            def get_secure_cookie(self, name):
+                return None
+
+            def set_secure_cookie(self, *args, **kwargs):
+                test_case.assertEqual(kwargs['expires_days'], 'St. Neversday')
+
+        handler = StubHandler()
+        manager = SessionManager(handler)
+        manager.set('some-object', 'Some object')
+
 
 class StubHandler(SessionMixin):
     session_id = 'session-id'

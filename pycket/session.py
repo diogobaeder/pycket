@@ -101,7 +101,7 @@ class SessionManager(object):
     def __create_session_id(self):
         session_id = str(uuid4())
         self.handler.set_secure_cookie(self.SESSION_ID_NAME, session_id,
-                                       expires_days=None, expires=None)
+                                       **self.__cookie_settings())
         return session_id
 
     def __to_dict(self, raw_session):
@@ -115,6 +115,12 @@ class SessionManager(object):
 
         callback(session)
         self.__set_session_in_db(session)
+
+    def __cookie_settings(self):
+        cookie_settings = self.handler.settings.get('pycket_cookies', {})
+        cookie_settings.setdefault('expires', None)
+        cookie_settings.setdefault('expires_days', None)
+        return cookie_settings
 
 
 class SessionMixin(object):
