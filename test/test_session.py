@@ -72,7 +72,6 @@ class SessionManagerTest(TestCase):
         manager.set('some-object', {'foo': 'bar'})
 
         raw_session = self.client.get(handler.session_id)
-
         session = pickle.loads(raw_session)
 
         self.assertEqual(session['some-object']['foo'], 'bar')
@@ -103,6 +102,20 @@ class SessionManagerTest(TestCase):
         manager = SessionManager(handler)
 
         self.assertIsNone(manager.get('unexistant-object'))
+
+    @istest
+    def deletes_objects_from_session(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        manager.set('some-object', {'foo': 'bar'})
+        manager.set('some-object2', {'foo2': 'bar2'})
+        manager.delete('some-object')
+
+        raw_session = self.client.get(handler.session_id)
+        session = pickle.loads(raw_session)
+
+        self.assertEqual(session.keys(), ['some-object2'])
 
 
 class StubHandler(SessionMixin):

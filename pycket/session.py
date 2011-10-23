@@ -12,15 +12,19 @@ class SessionManager(object):
         self.client = redis.Redis(db=self.SESSION_DB)
 
     def set(self, name, value):
-        session = self.__get_session_from_db()
-
-        session[name] = value
-        self.__set_session_in_db(session)
+        def change(session):
+            session[name] = value
+        self.__change_session(change)
 
     def get(self, name):
         session = self.__get_session_from_db()
 
         return session.get(name)
+
+    def delete(self, name):
+        def change(session):
+            del session[name]
+        self.__change_session(change)
 
     def __set_session_in_db(self, session):
         session_id = self.__get_session_id()
@@ -49,6 +53,12 @@ class SessionManager(object):
             return {}
         else:
             return pickle.loads(raw_session)
+
+    def __change_session(self, callback):
+        session = self.__get_session_from_db()
+
+        callback(session)
+        self.__set_session_in_db(session)
 
 
 class SessionMixin(object):
