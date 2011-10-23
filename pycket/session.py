@@ -2,10 +2,20 @@
 This module contains SessionMixin, which can be used in RequestHandlers, and
 SessionManager, which is the real session manager, and is referenced by the
 SessionMixin.
+
+It's mandatory that you set the "cookie_secret" in your application settings,
+because the session ID is stored in a secure manner.
+
 If you want to change the settings that are passed to the Redis client, set a
 "pycket_redis" dictionary with the intended Redis settings in your Tornado
 application settings. All these settings are passed to the redis.Redis client
-(except for the "db" parameter, which is always set to "pycket_sessions")
+(except for the "db" parameter, which is always set to "pycket_sessions").
+
+If you want to change the cookie settings passed to the handler, set a
+"pycket_cookies" setting with the items you want. This is also valid for
+"expires" and "expires_days", which, by default, will be None, therefore making
+the sessions expire on browser close, but, if you set them, your custom values
+will override the default behaviour.
 '''
 
 import pickle
@@ -19,9 +29,11 @@ class SessionManager(object):
     persisted in a Redis database, inside a bucket called "pycket_sessions".
     After 1 day without changing a session, it's purged from the bucket,
     to avoid it to grow out-of-control.
+
     When a session is started, a cookie named 'PYCKET_ID' is set, containing the
     encrypted session id of the user. By default, it's cleaned every time the
     user closes the browser.
+
     The recommendation is to use the manager instance that comes with the
     SessionMixin (using the "session" property of the handler instance), but it
     can be instantiated ad-hoc.
@@ -72,7 +84,7 @@ class SessionManager(object):
 
     def delete(self, name):
         '''
-        Deletes the object with "name" from the session.
+        Deletes the object with "name" from the session, if exists.
         '''
 
         def change(session):
@@ -127,10 +139,12 @@ class SessionMixin(object):
     '''
     This mixin must be included in the request handler inheritance list, so that
     the handler can support sessions.
+
     Example:
     >>> class MyHandler(tornado.web.RequestHandler, SessionMixin):
     ...    def get(self):
     ...        print type(self.session) # SessionManager
+
     Refer to SessionManager documentation in order to know which methods are
     available.
     '''
