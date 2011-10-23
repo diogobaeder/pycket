@@ -82,7 +82,7 @@ class NotificationManagerTest(RedisTestCase):
         self.assertEqual(manager['foo'], 'bar')
 
 
-class StubHandler(SessionMixin):
+class StubHandler(object):
     session_id = 'session-id'
     settings = {}
 

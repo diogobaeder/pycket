@@ -285,7 +285,7 @@ class SessionManagerTest(RedisTestCase):
         manager.set('some-object', 'Some object')
 
 
-class StubHandler(SessionMixin):
+class StubHandler(object):
     session_id = 'session-id'
     settings = {}
 
