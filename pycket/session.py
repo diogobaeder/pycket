@@ -6,6 +6,7 @@ import redis
 class SessionManager(object):
     SESSION_ID_NAME = 'PYCKET_ID'
     SESSION_DB = 'pycket_sessions'
+    EXPIRE_SECONDS = 24 * 60 * 60
 
     def __init__(self, handler):
         self.handler = handler
@@ -30,6 +31,7 @@ class SessionManager(object):
         session_id = self.__get_session_id()
         pickled_session = pickle.dumps(session)
         self.client.set(session_id, pickled_session)
+        self.client.expire(session_id, self.EXPIRE_SECONDS)
 
     def __get_session_from_db(self):
         session_id = self.__get_session_id()

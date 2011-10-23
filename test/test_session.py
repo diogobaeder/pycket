@@ -1,4 +1,5 @@
 import pickle
+import time
 from unittest import TestCase
 
 from nose.tools import istest
@@ -116,6 +117,38 @@ class SessionManagerTest(TestCase):
         session = pickle.loads(raw_session)
 
         self.assertEqual(session.keys(), ['some-object2'])
+
+    @istest
+    def starts_with_1_day_to_expire_in_database(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        one_day = 24 * 60 * 60
+
+        self.assertEqual(manager.EXPIRE_SECONDS, one_day)
+
+    @istest
+    def still_retrieves_object_if_not_passed_from_expiration(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        manager.set('foo', 'bar')
+
+        time.sleep(1)
+
+        self.assertEqual(manager.get('foo'), 'bar')
+
+    @istest
+    def cannot_retrieve_object_if_passed_from_expiration(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+        manager.EXPIRE_SECONDS = 1
+
+        manager.set('foo', 'bar')
+
+        time.sleep(manager.EXPIRE_SECONDS + 1)
+
+        self.assertIsNone(manager.get('foo'))
 
 
 class StubHandler(SessionMixin):
