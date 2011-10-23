@@ -26,12 +26,10 @@ class NotificationManager(SessionManager):
 
 
 class NotificationMixin(SessionMixin):
-    MANAGER_CLASS = NotificationManager
-
     @property
     def notifications(self):
         '''
         Returns a NotificationManager instance
         '''
 
-        return self._get_manager()
+        return self._get_manager(NotificationManager)

@@ -149,17 +149,15 @@ class SessionMixin(object):
     available.
     '''
 
-    MANAGER_CLASS = SessionManager
-
     @property
     def session(self):
         '''
         Returns a SessionManager instance
         '''
 
-        return self._get_manager()
+        return self._get_manager(SessionManager)
 
-    def _get_manager(self):
+    def _get_manager(self, manager_class):
         if not hasattr(self, '__manager'):
-            self.__manager = self.MANAGER_CLASS(self)
+            self.__manager = manager_class(self)
         return self.__manager
