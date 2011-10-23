@@ -1,6 +1,8 @@
+import pickle
 from unittest import TestCase
 
 from nose.tools import istest
+import redis
 
 from pycket.session import SessionManager, SessionMixin
 
@@ -16,6 +18,13 @@ class SessionMixinTest(TestCase):
 
 
 class SessionManagerTest(TestCase):
+    client = None
+
+    def setUp(self):
+        if self.client is None:
+            self.client = redis.Redis(db=SessionManager.SESSION_DB)
+        self.client.flushdb()
+
     @istest
     def sets_session_id_on_cookies(self):
         test_case = self
@@ -54,6 +63,46 @@ class SessionManagerTest(TestCase):
         session_manager.set('some-object', 'Some object')
 
         self.assertTrue(handler.cookie_retrieved)
+
+    @istest
+    def saves_session_object_on_redis_with_same_session_id_as_cookie(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        manager.set('some-object', {'foo': 'bar'})
+
+        raw_session = self.client.get(handler.session_id)
+
+        session = pickle.loads(raw_session)
+
+        self.assertEqual(session['some-object']['foo'], 'bar')
+
+    @istest
+    def retrieves_session_with_same_data_as_saved(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        manager.set('some-object', {'foo': 'bar'})
+
+        self.assertEqual(manager.get('some-object')['foo'], 'bar')
+
+    @istest
+    def keeps_previous_items_when_setting_new_ones(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        manager.set('some-object', {'foo': 'bar'})
+        manager.set('some-object2', {'foo2': 'bar2'})
+
+        self.assertEqual(manager.get('some-object')['foo'], 'bar')
+        self.assertEqual(manager.get('some-object2')['foo2'], 'bar2')
+
+    @istest
+    def retrieves_none_if_session_object_not_previously_set(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        self.assertIsNone(manager.get('unexistant-object'))
 
 
 class StubHandler(SessionMixin):
