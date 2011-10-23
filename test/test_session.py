@@ -17,14 +17,17 @@ class SessionMixinTest(TestCase):
         self.assertIsInstance(StubHandler().session, SessionManager)
 
 
-
-class SessionManagerTest(TestCase):
+class RedisTestCase(TestCase):
     client = None
 
     def setUp(self):
         if self.client is None:
-            self.client = redis.Redis(db=SessionManager.SESSION_DB)
+            self.client = redis.Redis(db=self.DB_NAME)
         self.client.flushdb()
+
+
+class SessionManagerTest(RedisTestCase):
+    DB_NAME = SessionManager.DB_NAME
 
     @istest
     def sets_session_id_on_cookies(self):

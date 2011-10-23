@@ -28,7 +28,7 @@ class SessionManager(object):
     '''
 
     SESSION_ID_NAME = 'PYCKET_ID'
-    SESSION_DB = 'pycket_sessions'
+    DB_NAME = 'pycket_sessions'
     EXPIRE_SECONDS = 24 * 60 * 60
 
     def __init__(self, handler):
@@ -38,7 +38,7 @@ class SessionManager(object):
 
         self.handler = handler
         redis_settings = handler.settings.get('pycket_redis', {})
-        redis_settings['db'] = self.SESSION_DB
+        redis_settings['db'] = self.DB_NAME
         self.client = redis.Redis(**redis_settings)
 
     def set(self, name, value):
@@ -117,12 +117,17 @@ class SessionMixin(object):
     available.
     '''
 
+    MANAGER_CLASS = SessionManager
+
     @property
     def session(self):
         '''
         Returns a SessionManager instance
         '''
 
+        return self._get_manager()
+
+    def _get_manager(self):
         if not hasattr(self, '__manager'):
-            self.__manager = SessionManager(self)
+            self.__manager = self.MANAGER_CLASS(self)
         return self.__manager
