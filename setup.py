@@ -18,7 +18,8 @@ Redis user sessions to use with Tornado server""",
       include_package_data=True,
       zip_safe=True,
       install_requires=[
-          # -*- Extra requirements: -*-
+          'redis',
+          'tornado',
       ],
       entry_points="""
       # -*- Entry points: -*-
