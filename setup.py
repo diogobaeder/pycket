@@ -8,7 +8,10 @@ setup(name='pycket',
       description="Redis sessions for Tornado",
       long_description="""\
 Redis user sessions to use with Tornado server""",
-      classifiers=[], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+      classifiers=[
+          'Topic :: Internet :: WWW/HTTP :: Session',
+          'Topic :: Database',
+          ], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
       keywords='pycket redis tornado session python',
       author='Diogo Baeder',
       author_email='desenvolvedor@diogobaeder.com.br',
