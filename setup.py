@@ -3,11 +3,14 @@ import sys, os
 
 version = '0.1'
 
+f = open(os.path.join(os.path.dirname(__file__), 'README.markdown'))
+long_description = f.read()
+f.close()
+
 setup(name='pycket',
       version=version,
       description="Redis sessions for Tornado",
-      long_description="""\
-Redis user sessions to use with Tornado server""",
+      long_description=long_description,
       classifiers=[
           'Topic :: Internet :: WWW/HTTP :: Session',
           'Topic :: Database',
