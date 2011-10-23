@@ -66,6 +66,22 @@ pycket understands two types of settings, which must be items in the application
 1. "pycket_redis": this is a dictionary containing any items that should be repassed to the redis.Redis instance to be used in the session manager (such as "host" and "port"); Notice, however, that the "db" setting will be overriden by "pycket_session";
 2. "pycket_cookies": this is a dictionary containing all settings to be repassed to the RequestHandler.set_secure_cookie. If they don't contain "expires" or "expires_days" items, they will be set as None, which means that the default behaviour for the sessions is to last on browser session. (And deleted as soon as the user closes the browser.) Notice that the sessions in the database last for one day, though.
 
+Example:
+
+```python
+application = tornado.web.Application([
+    (r'/', MainHandler),
+], **{
+    'pycket_redis': {
+        'host': 'localhost',
+        'port': 6379,
+    }
+    'pycket_cookies': {
+        'expires_days': 120,
+    }
+)
+```
+
 ## Notifications
 This feature is almost equal to the sessions, but slightly different:
 
