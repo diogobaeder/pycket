@@ -15,7 +15,7 @@ class NotificationMixin(SessionMixin):
     MANAGER_CLASS = NotificationManager
 
     @property
-    def notification(self):
+    def notifications(self):
         '''
         Returns a NotificationManager instance
         '''

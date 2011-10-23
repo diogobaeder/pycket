@@ -24,7 +24,7 @@ class NotificationMixinTest(TestCase):
         class StubHandler(NotificationMixin):
             settings = {}
 
-        self.assertIsInstance(StubHandler().notification, NotificationManager)
+        self.assertIsInstance(StubHandler().notifications, NotificationManager)
 
 
 class NotificationManagerTest(RedisTestCase):
