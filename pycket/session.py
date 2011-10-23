@@ -51,7 +51,7 @@ class SessionManager(object):
         self.handler = handler
         redis_settings = handler.settings.get('pycket_redis', {})
         redis_settings['db'] = self.DB_NAME
-        self.client = redis.Redis(**redis_settings)
+        self.bucket = redis.Redis(**redis_settings)
 
     def set(self, name, value):
         '''
@@ -95,12 +95,12 @@ class SessionManager(object):
     def __set_session_in_db(self, session):
         session_id = self.__get_session_id()
         pickled_session = pickle.dumps(session)
-        self.client.set(session_id, pickled_session)
-        self.client.expire(session_id, self.EXPIRE_SECONDS)
+        self.bucket.set(session_id, pickled_session)
+        self.bucket.expire(session_id, self.EXPIRE_SECONDS)
 
     def __get_session_from_db(self):
         session_id = self.__get_session_id()
-        raw_session = self.client.get(session_id)
+        raw_session = self.bucket.get(session_id)
 
         return self.__to_dict(raw_session)
 
