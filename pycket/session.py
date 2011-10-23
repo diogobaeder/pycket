@@ -4,25 +4,55 @@ from uuid import uuid4
 import redis
 
 class SessionManager(object):
+    '''
+    This is the real class that manages sessions. All session objects are
+    persisted in a Redis database, inside a bucket called "pycket_sessions".
+    After 1 day without changing a session, it's purged from the bucket,
+    to avoid it to grow out-of-control.
+    When a session is started, a cookie named 'PYCKET_ID' is set, containing the
+    encrypted session id of the user. By default, it's cleaned every time the
+    user closes the browser.
+    The recommendation is to use the manager instance that comes with the
+    SessionMixin (using the "session" property of the handler instance), but it
+    can be instantiated ad-hoc.
+    '''
+
     SESSION_ID_NAME = 'PYCKET_ID'
     SESSION_DB = 'pycket_sessions'
     EXPIRE_SECONDS = 24 * 60 * 60
 
     def __init__(self, handler):
+        '''
+        Expects a tornado.web.RequestHandler
+        '''
+
         self.handler = handler
         self.client = redis.Redis(db=self.SESSION_DB)
 
     def set(self, name, value):
+        '''
+        Sets a value for "name". It may be any pickable (see "pickle" module
+        documentation) object.
+        '''
+
         def change(session):
             session[name] = value
         self.__change_session(change)
 
     def get(self, name):
+        '''
+        Gets the object for "name", or None if there's no such object.
+        '''
+
         session = self.__get_session_from_db()
 
         return session.get(name)
 
     def delete(self, name):
+        '''
+        Deletes the object with "name" from the session.
+        '''
+
         def change(session):
             del session[name]
         self.__change_session(change)
@@ -64,8 +94,23 @@ class SessionManager(object):
 
 
 class SessionMixin(object):
+    '''
+    This mixin must be included in the request handler inheritance list, so that
+    the handler can support sessions.
+    Example:
+    >>> class MyHandler(tornado.web.RequestHandler, SessionMixin):
+    ...    def get(self):
+    ...        print type(self.session) # SessionManager
+    Refer to SessionManager documentation in order to know which methods are
+    available.
+    '''
+
     @property
     def session(self):
+        '''
+        Returns a SessionManager instance
+        '''
+
         if not hasattr(self, '__manager'):
             self.__manager = SessionManager(self)
         return self.__manager
