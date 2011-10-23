@@ -51,14 +51,24 @@ class SessionManager(object):
             session[name] = value
         self.__change_session(change)
 
-    def get(self, name):
+    def get(self, name, default=None):
         '''
-        Gets the object for "name", or None if there's no such object.
+        Gets the object for "name", or None if there's no such object. If
+        "default" is provided, return it if no object is found.
         '''
 
         session = self.__get_session_from_db()
 
-        return session.get(name)
+        return session.get(name, default)
+
+    def __getitem__(self, key):
+        value = self.get(key)
+        if value is None:
+            raise KeyError('%s not found in bucket' % key)
+        return value
+
+    def __setitem__(self, key, value):
+        self.set(key, value)
 
     def delete(self, name):
         '''
@@ -66,7 +76,8 @@ class SessionManager(object):
         '''
 
         def change(session):
-            del session[name]
+            if name in session.keys():
+                del session[name]
         self.__change_session(change)
 
     def __set_session_in_db(self, session):

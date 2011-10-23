@@ -2,7 +2,7 @@ import pickle
 import time
 from unittest import TestCase
 
-from nose.tools import istest
+from nose.tools import istest, raises
 import redis
 
 from pycket.session import SessionManager, SessionMixin
@@ -172,6 +172,41 @@ class SessionManagerTest(RedisTestCase):
         manager = SessionManager(handler)
 
         self.assertTrue(settings['was_retrieved'])
+
+    @istest
+    def retrieves_object_with_dict_key(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        manager.set('foo', 'bar')
+
+        self.assertEqual(manager['foo'], 'bar')
+
+    @istest
+    @raises(KeyError)
+    def raises_key_error_if_object_doesnt_exist(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        manager['foo']
+
+    @istest
+    def sets_object_with_dict_key(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        manager['foo'] = 'bar'
+
+        self.assertEqual(manager['foo'], 'bar')
+
+    @istest
+    def gets_default_value_if_provided_and_not_in_bucket(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        value = manager.get('foo', 'Default')
+
+        self.assertEqual(value, 'Default')
 
 
 class StubHandler(SessionMixin):

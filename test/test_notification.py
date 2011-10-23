@@ -63,6 +63,24 @@ class NotificationManagerTest(RedisTestCase):
 
         self.assertEqual(notifications.keys(), [])
 
+    @istest
+    def gets_default_value_if_provided_and_not_in_bucket(self):
+        handler = StubHandler()
+        manager = NotificationManager(handler)
+
+        value = manager.get('foo', 'Default')
+
+        self.assertEqual(value, 'Default')
+
+    @istest
+    def sets_object_with_dict_key(self):
+        handler = StubHandler()
+        manager = NotificationManager(handler)
+
+        manager['foo'] = 'bar'
+
+        self.assertEqual(manager['foo'], 'bar')
+
 
 class StubHandler(SessionMixin):
     session_id = 'session-id'
