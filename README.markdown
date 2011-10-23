@@ -6,10 +6,13 @@ This software is under BSD 2-Clause License (see LICENSE file)
 
 ## Requirements
 Non-Python requirements:
+
 * Redis (tested with version 2.4.0)
+
 Python requirements (included in setup script)
-* Tornado (tested with 2.1.1, installable via "tornado" package in PyPI)
-* redis-py (tested with 2.4.9, installable via "redis" package in PyPI)
+
+* [Tornado](http://pypi.python.org/pypi/tornado) (tested with 2.1.1, installable via "tornado" package in PyPI)
+* [redis-py](http://pypi.python.org/pypi/redis/) (tested with 2.4.9, installable via "redis" package in PyPI)
 
 ### Development requirements
 If you wish to contribute to the project as a developer, just install the requirements file included in the project with pip.
@@ -58,7 +61,7 @@ print session['gimme'] # 'Fire!'
 ```
 
 ## Settings
-pycket understands two types of settings:
+pycket understands two types of settings, which must be items in the application's settings:
 
 1. "pycket_redis": this is a dictionary containing any items that should be repassed to the redis.Redis instance to be used in the session manager (such as "host" and "port"); Notice, however, that the "db" setting will be overriden by "pycket_session";
 2. "pycket_cookies": this is a dictionary containing all settings to be repassed to the RequestHandler.set_secure_cookie. If they don't contain "expires" or "expires_days" items, they will be set as None, which means that the default behaviour for the sessions is to last on browser session. (And deleted as soon as the user closes the browser.) Notice that the sessions in the database last for one day, though.
