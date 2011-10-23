@@ -1,3 +1,13 @@
+'''
+This module contains SessionMixin, which can be used in RequestHandlers, and
+SessionManager, which is the real session manager, and is referenced by the
+SessionMixin.
+If you want to change the settings that are passed to the Redis client, set a
+"pycket_redis" dictionary with the intended Redis settings in your Tornado
+application settings. All these settings are passed to the redis.Redis client
+(except for the "db" parameter, which is always set to "pycket_sessions")
+'''
+
 import pickle
 from uuid import uuid4
 
@@ -27,7 +37,9 @@ class SessionManager(object):
         '''
 
         self.handler = handler
-        self.client = redis.Redis(db=self.SESSION_DB)
+        redis_settings = handler.settings.get('pycket_redis', {})
+        redis_settings['db'] = self.SESSION_DB
+        self.client = redis.Redis(**redis_settings)
 
     def set(self, name, value):
         '''

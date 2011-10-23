@@ -12,7 +12,7 @@ class SessionMixinTest(TestCase):
     @istest
     def starts_handler_with_session_manager(self):
         class StubHandler(SessionMixin):
-            pass
+            settings = {}
 
         self.assertIsInstance(StubHandler().session, SessionManager)
 
@@ -31,6 +31,7 @@ class SessionManagerTest(TestCase):
         test_case = self
 
         class StubHandler(SessionMixin):
+            settings = {}
             def get_secure_cookie(self, name):
                 test_case.assertEqual(name, 'PYCKET_ID')
                 self.cookie_set = True
@@ -55,6 +56,7 @@ class SessionManagerTest(TestCase):
         test_case = self
 
         class StubHandler(SessionMixin):
+            settings = {}
             def get_secure_cookie(self, name):
                 self.cookie_retrieved = True
                 return 'some-id'
@@ -150,9 +152,28 @@ class SessionManagerTest(TestCase):
 
         self.assertIsNone(manager.get('foo'))
 
+    @istest
+    def repasses_pycket_redis_settings_to_client(self):
+        test_case = self
+        settings = {'was_retrieved': False}
+
+        class StubSettings(dict):
+            def get(self, name, default):
+                test_case.assertEqual(name, 'pycket_redis')
+                test_case.assertEqual(default, {})
+                settings['was_retrieved'] = True
+                return default
+
+        handler = StubHandler()
+        handler.settings = StubSettings()
+        manager = SessionManager(handler)
+
+        self.assertTrue(settings['was_retrieved'])
+
 
 class StubHandler(SessionMixin):
     session_id = 'session-id'
+    settings = {}
 
     def get_secure_cookie(self, name):
         return self.session_id
