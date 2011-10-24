@@ -85,15 +85,22 @@ class SessionManager(object):
     def __setitem__(self, key, value):
         self.set(key, value)
 
-    def delete(self, name):
+    def __contains__(self, key):
+        session = self.__get_session_from_db()
+        return key in session
+
+    def delete(self, *names):
         '''
         Deletes the object with "name" from the session, if exists.
         '''
 
         def change(session):
-            if name in session.keys():
+            keys = session.keys()
+            names_in_common = [name for name in names if name in keys]
+            for name in names_in_common:
                 del session[name]
         self.__change_session(change)
+    __delitem__ = delete
 
     def __set_session_in_db(self, session):
         session_id = self.__get_session_id()

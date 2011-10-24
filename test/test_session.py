@@ -1,11 +1,14 @@
 import pickle
 import time
-from unittest import skip, TestCase
+from unittest import skip, skipIf, TestCase
 
 from nose.tools import istest, raises
 import redis
 
 from pycket.session import SessionManager, SessionMixin
+
+
+skip_slow_tests = False
 
 
 class SessionMixinTest(TestCase):
@@ -132,7 +135,7 @@ class SessionManagerTest(RedisTestCase):
         self.assertEqual(manager.EXPIRE_SECONDS, one_day)
 
     @istest
-    #@skip('Too slow')
+    @skipIf(skip_slow_tests, 'This test is too slow')
     def still_retrieves_object_if_not_passed_from_expiration(self):
         handler = StubHandler()
         manager = SessionManager(handler)
@@ -144,7 +147,7 @@ class SessionManagerTest(RedisTestCase):
         self.assertEqual(manager.get('foo'), 'bar')
 
     @istest
-    #@skip('Too slow')
+    @skipIf(skip_slow_tests, 'This test is too slow')
     def cannot_retrieve_object_if_passed_from_expiration(self):
         handler = StubHandler()
         manager = SessionManager(handler)
@@ -299,6 +302,42 @@ class SessionManagerTest(RedisTestCase):
         manager = SessionManager(handler)
         manager.set('foo', 'bar')
         self.assertEqual(manager.dataset.connection_pool._available_connections[0].db, 10)
+
+    @istest
+    def deletes_multiple_session_objects_at_once(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        manager.set('some-object', {'foo': 'bar'})
+        manager.set('some-object2', {'foo2': 'bar2'})
+        manager.delete('some-object', 'some-object2')
+
+        raw_session = self.dataset.get(handler.session_id)
+        session = pickle.loads(raw_session)
+
+        self.assertEqual(session.keys(), [])
+
+    @istest
+    def deletes_item_using_command(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        manager.set('some-object', {'foo': 'bar'})
+
+        del manager['some-object']
+
+        self.assertIsNone(manager.get('some-object'))
+
+    @istest
+    def verifies_if_a_session_exist(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        self.assertFalse('foo' in manager)
+
+        manager['foo'] = 'bar'
+
+        self.assertTrue('foo' in manager)
 
 
 class StubHandler(object):
