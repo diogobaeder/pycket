@@ -8,7 +8,7 @@ import redis
 from pycket.session import SessionManager, SessionMixin
 
 
-skip_slow_tests = True
+skip_slow_tests = False
 
 
 class SessionMixinTest(TestCase):
@@ -348,6 +348,38 @@ class SessionManagerTest(RedisTestCase):
         manager.set('bar', 'BAR')
 
         self.assertListEqual(manager.keys(), ['foo', 'bar'])
+
+    @istest
+    def iterates_with_method_over_keys(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        manager.set('foo', 'FOO')
+        manager.set('bar', 'BAR')
+
+        iterations = 0
+
+        for key in manager.iterkeys():
+            self.assertTrue(key in manager)
+            iterations += 1
+
+        self.assertEqual(iterations, 2)
+
+    @istest
+    def iterates_without_method_over_keys(self):
+        handler = StubHandler()
+        manager = SessionManager(handler)
+
+        manager.set('foo', 'FOO')
+        manager.set('bar', 'BAR')
+
+        iterations = 0
+
+        for key in manager:
+            self.assertTrue(key in manager)
+            iterations += 1
+
+        self.assertEqual(iterations, 2)
 
 
 class StubHandler(object):

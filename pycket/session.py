@@ -26,6 +26,7 @@ from uuid import uuid4
 
 import redis
 
+
 class SessionManager(object):
     '''
     This is the real class that manages sessions. All session objects are
@@ -92,6 +93,11 @@ class SessionManager(object):
     def keys(self):
         session = self.__get_session_from_db()
         return session.keys()
+
+    def iterkeys(self):
+        session = self.__get_session_from_db()
+        return iter(session)
+    __iter__ = iterkeys
 
     def __getitem__(self, key):
         value = self.get(key)
