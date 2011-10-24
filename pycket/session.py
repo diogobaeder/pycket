@@ -76,19 +76,6 @@ class SessionManager(object):
 
         return session.get(name, default)
 
-    def __getitem__(self, key):
-        value = self.get(key)
-        if value is None:
-            raise KeyError('%s not found in dataset' % key)
-        return value
-
-    def __setitem__(self, key, value):
-        self.set(key, value)
-
-    def __contains__(self, key):
-        session = self.__get_session_from_db()
-        return key in session
-
     def delete(self, *names):
         '''
         Deletes the object with "name" from the session, if exists.
@@ -101,6 +88,23 @@ class SessionManager(object):
                 del session[name]
         self.__change_session(change)
     __delitem__ = delete
+
+    def keys(self):
+        session = self.__get_session_from_db()
+        return session.keys()
+
+    def __getitem__(self, key):
+        value = self.get(key)
+        if value is None:
+            raise KeyError('%s not found in dataset' % key)
+        return value
+
+    def __setitem__(self, key, value):
+        self.set(key, value)
+
+    def __contains__(self, key):
+        session = self.__get_session_from_db()
+        return key in session
 
     def __set_session_in_db(self, session):
         session_id = self.__get_session_id()
