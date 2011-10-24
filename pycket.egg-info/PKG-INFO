@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: pycket
-Version: 0.1dev
+Version: 0.1
 Summary: Redis sessions for Tornado
 Home-page: UNKNOWN
 Author: Diogo Baeder
