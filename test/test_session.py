@@ -132,7 +132,7 @@ class SessionManagerTest(RedisTestCase):
         self.assertEqual(manager.EXPIRE_SECONDS, one_day)
 
     @istest
-    @skip('Too slow')
+    #@skip('Too slow')
     def still_retrieves_object_if_not_passed_from_expiration(self):
         handler = StubHandler()
         manager = SessionManager(handler)
@@ -144,7 +144,7 @@ class SessionManagerTest(RedisTestCase):
         self.assertEqual(manager.get('foo'), 'bar')
 
     @istest
-    @skip('Too slow')
+    #@skip('Too slow')
     def cannot_retrieve_object_if_passed_from_expiration(self):
         handler = StubHandler()
         manager = SessionManager(handler)
