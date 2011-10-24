@@ -9,15 +9,15 @@ from pycket.session import SessionManager, SessionMixin
 
 
 class FunctionalTest(AsyncHTTPTestCase):
-    bucket = None
+    dataset = None
 
     def setUp(self):
         super(FunctionalTest, self).setUp()
-        self.bucket.flushall()
+        self.dataset.flushall()
 
     def get_app(self):
-        if self.bucket is None:
-            self.bucket = redis.Redis(db=SessionManager.DB)
+        if self.dataset is None:
+            self.dataset = redis.Redis(db=SessionManager.DB)
         class SimpleHandler(RequestHandler, SessionMixin):
             def get(self):
                 self.session.set('foo', 'bar')
@@ -34,11 +34,11 @@ class FunctionalTest(AsyncHTTPTestCase):
 
     @istest
     def works_with_request_handlers(self):
-        self.assertEqual(len(self.bucket.keys()), 0)
+        self.assertEqual(len(self.dataset.keys()), 0)
 
         response = self.fetch('/')
 
         self.assertEqual(response.code, 200)
         self.assertIn('bar', response.body)
 
-        self.assertEqual(len(self.bucket.keys()), 1)
+        self.assertEqual(len(self.dataset.keys()), 1)

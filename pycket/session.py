@@ -30,7 +30,7 @@ class SessionManager(object):
     '''
     This is the real class that manages sessions. All session objects are
     persisted in a Redis database, inside db 0.
-    After 1 day without changing a session, it's purged from the bucket,
+    After 1 day without changing a session, it's purged from the dataset,
     to avoid it to grow out-of-control.
 
     When a session is started, a cookie named 'PYCKET_ID' is set, containing the
@@ -47,7 +47,7 @@ class SessionManager(object):
     EXPIRE_SECONDS = 24 * 60 * 60
     DB_SETTING = 'db_sessions'
 
-    bucket = None
+    dataset = None
 
     def __init__(self, handler):
         '''
@@ -79,7 +79,7 @@ class SessionManager(object):
     def __getitem__(self, key):
         value = self.get(key)
         if value is None:
-            raise KeyError('%s not found in bucket' % key)
+            raise KeyError('%s not found in dataset' % key)
         return value
 
     def __setitem__(self, key, value):
@@ -98,14 +98,14 @@ class SessionManager(object):
     def __set_session_in_db(self, session):
         session_id = self.__get_session_id()
         pickled_session = pickle.dumps(session)
-        self.__setup_bucket()
-        self.bucket.set(session_id, pickled_session)
-        self.bucket.expire(session_id, self.EXPIRE_SECONDS)
+        self.__setup_dataset()
+        self.dataset.set(session_id, pickled_session)
+        self.dataset.expire(session_id, self.EXPIRE_SECONDS)
 
     def __get_session_from_db(self):
         session_id = self.__get_session_id()
-        self.__setup_bucket()
-        raw_session = self.bucket.get(session_id)
+        self.__setup_dataset()
+        raw_session = self.dataset.get(session_id)
 
         return self.__to_dict(raw_session)
 
@@ -139,9 +139,9 @@ class SessionManager(object):
         cookie_settings.setdefault('expires_days', None)
         return cookie_settings
 
-    def __setup_bucket(self):
-        if self.bucket is None:
-            self.bucket = redis.Redis(**self.__redis_settings())
+    def __setup_dataset(self):
+        if self.dataset is None:
+            self.dataset = redis.Redis(**self.__redis_settings())
 
     def __redis_settings(self):
         redis_settings = self.handler.settings.get('pycket_redis', {})

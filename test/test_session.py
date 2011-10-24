@@ -18,12 +18,12 @@ class SessionMixinTest(TestCase):
 
 
 class RedisTestCase(TestCase):
-    bucket = None
+    dataset = None
 
     def setUp(self):
-        if self.bucket is None:
-            self.bucket = redis.Redis(db=self.DB)
-        self.bucket.flushall()
+        if self.dataset is None:
+            self.dataset = redis.Redis(db=self.DB)
+        self.dataset.flushall()
 
 
 class SessionManagerTest(RedisTestCase):
@@ -76,7 +76,7 @@ class SessionManagerTest(RedisTestCase):
 
         manager.set('some-object', {'foo': 'bar'})
 
-        raw_session = self.bucket.get(handler.session_id)
+        raw_session = self.dataset.get(handler.session_id)
         session = pickle.loads(raw_session)
 
         self.assertEqual(session['some-object']['foo'], 'bar')
@@ -117,7 +117,7 @@ class SessionManagerTest(RedisTestCase):
         manager.set('some-object2', {'foo2': 'bar2'})
         manager.delete('some-object')
 
-        raw_session = self.bucket.get(handler.session_id)
+        raw_session = self.dataset.get(handler.session_id)
         session = pickle.loads(raw_session)
 
         self.assertEqual(session.keys(), ['some-object2'])
@@ -171,7 +171,7 @@ class SessionManagerTest(RedisTestCase):
         handler = StubHandler()
         handler.settings = StubSettings()
         manager = SessionManager(handler)
-        manager.get('some value to setup the bucket')
+        manager.get('some value to setup the dataset')
 
         self.assertTrue(settings['was_retrieved'])
 
@@ -202,7 +202,7 @@ class SessionManagerTest(RedisTestCase):
         self.assertEqual(manager['foo'], 'bar')
 
     @istest
-    def gets_default_value_if_provided_and_not_in_bucket(self):
+    def gets_default_value_if_provided_and_not_in_dataset(self):
         handler = StubHandler()
         manager = SessionManager(handler)
 
@@ -298,7 +298,7 @@ class SessionManagerTest(RedisTestCase):
         }
         manager = SessionManager(handler)
         manager.set('foo', 'bar')
-        self.assertEqual(manager.bucket.connection_pool._available_connections[0].db, 10)
+        self.assertEqual(manager.dataset.connection_pool._available_connections[0].db, 10)
 
 
 class StubHandler(object):
