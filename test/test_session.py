@@ -132,7 +132,7 @@ class SessionManagerTest(RedisTestCase):
         self.assertEqual(manager.EXPIRE_SECONDS, one_day)
 
     @istest
-    #@skip('Too slow')
+    @skip('Too slow')
     def still_retrieves_object_if_not_passed_from_expiration(self):
         handler = StubHandler()
         manager = SessionManager(handler)
@@ -144,7 +144,7 @@ class SessionManagerTest(RedisTestCase):
         self.assertEqual(manager.get('foo'), 'bar')
 
     @istest
-    #@skip('Too slow')
+    @skip('Too slow')
     def cannot_retrieve_object_if_passed_from_expiration(self):
         handler = StubHandler()
         manager = SessionManager(handler)
@@ -286,6 +286,19 @@ class SessionManagerTest(RedisTestCase):
         handler = StubHandler()
         manager = SessionManager(handler)
         manager.set('some-object', 'Some object')
+
+    @istest
+    def uses_custom_sessions_database_if_provided(self):
+        handler = StubHandler()
+        handler.settings = {
+            'pycket_redis': {
+                'db_sessions': 10,
+                'db_notifications': 11,
+            }
+        }
+        manager = SessionManager(handler)
+        manager.set('foo', 'bar')
+        self.assertEqual(manager.bucket.connection_pool._available_connections[0].db, 10)
 
 
 class StubHandler(object):

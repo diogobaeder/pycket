@@ -104,6 +104,19 @@ class NotificationManagerTest(RedisTestCase):
 
         handler.test()
 
+    @istest
+    def uses_custom_notifications_database_if_provided(self):
+        handler = StubHandler()
+        handler.settings = {
+            'pycket_redis': {
+                'db_sessions': 10,
+                'db_notifications': 11,
+            }
+        }
+        manager = NotificationManager(handler)
+        manager.set('foo', 'bar')
+        self.assertEqual(manager.bucket.connection_pool._available_connections[0].db, 11)
+
 
 class StubHandler(object):
     session_id = 'session-id'

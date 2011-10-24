@@ -8,8 +8,10 @@ because the session ID is stored in a secure manner.
 
 If you want to change the settings that are passed to the Redis client, set a
 "pycket_redis" dictionary with the intended Redis settings in your Tornado
-application settings. All these settings are passed to the redis.Redis client
-(except for the "db" parameter, which is always set to 0).
+application settings. All these settings are passed to the redis.Redis client,
+except for the "db_sessions" and "db_notifications". These settings can contain
+numbers to change the datasets used for persistence, if you don't want to use
+the default numbers.
 
 If you want to change the cookie settings passed to the handler, set a
 "pycket_cookies" setting with the items you want. This is also valid for
@@ -18,6 +20,7 @@ the sessions expire on browser close, but, if you set them, your custom values
 will override the default behaviour.
 '''
 
+from copy import copy
 import pickle
 from uuid import uuid4
 
@@ -42,6 +45,7 @@ class SessionManager(object):
     SESSION_ID_NAME = 'PYCKET_ID'
     DB = 0
     EXPIRE_SECONDS = 24 * 60 * 60
+    DB_SETTING = 'db_sessions'
 
     bucket = None
 
@@ -51,12 +55,6 @@ class SessionManager(object):
         '''
 
         self.handler = handler
-
-    def __setup_bucket(self):
-        if self.bucket is None:
-            redis_settings = self.handler.settings.get('pycket_redis', {})
-            redis_settings['db'] = self.DB
-            self.bucket = redis.Redis(**redis_settings)
 
     def set(self, name, value):
         '''
@@ -140,6 +138,23 @@ class SessionManager(object):
         cookie_settings.setdefault('expires', None)
         cookie_settings.setdefault('expires_days', None)
         return cookie_settings
+
+    def __setup_bucket(self):
+        if self.bucket is None:
+            self.bucket = redis.Redis(**self.__redis_settings())
+
+    def __redis_settings(self):
+        redis_settings = self.handler.settings.get('pycket_redis', {})
+        redis_settings['db'] = redis_settings.get(self.DB_SETTING, self.DB)
+        return self.__clean_redis_settings(redis_settings)
+
+    def __clean_redis_settings(self, redis_settings):
+        from pycket.notification import NotificationManager
+        redis_settings = copy(redis_settings)
+        for custom_db_name in (SessionManager.DB_SETTING, NotificationManager.DB_SETTING):
+            if custom_db_name in redis_settings.keys():
+                del redis_settings[custom_db_name]
+        return redis_settings
 
 
 class SessionMixin(object):

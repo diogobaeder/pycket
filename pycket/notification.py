@@ -3,8 +3,9 @@ This module is the same as the sessions module, except that:
 1. NotificationMixin sets a "notifications" property instead a "session" one,
 and that the NotificationManager ("notifications") gets an object only once, and
 deletes it from the database after retrieving;
-2. The objects are stored in db 1 instead of
-0 to avoid conflicts with sessions.
+2. The objects are stored in db 1 (for default) instead of 0 to avoid conflicts
+with sessions. (You can change this setting with the "db_notifications" setting
+in the "pycket_redis" setting.)
 '''
 
 from pycket.session import create_mixin, SessionManager, SessionMixin
@@ -12,6 +13,7 @@ from pycket.session import create_mixin, SessionManager, SessionMixin
 
 class NotificationManager(SessionManager):
     DB = 1
+    DB_SETTING = 'db_notifications'
 
     def get(self, name, default=None):
         '''
