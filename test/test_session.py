@@ -1,6 +1,6 @@
 import pickle
 import time
-from unittest import TestCase
+from unittest import skip, TestCase
 
 from nose.tools import istest, raises
 import redis
@@ -18,16 +18,16 @@ class SessionMixinTest(TestCase):
 
 
 class RedisTestCase(TestCase):
-    client = None
+    bucket = None
 
     def setUp(self):
-        if self.client is None:
-            self.client = redis.Redis(db=self.DB_NAME)
-        self.client.flushdb()
+        if self.bucket is None:
+            self.bucket = redis.Redis(db=self.DB)
+        self.bucket.flushall()
 
 
 class SessionManagerTest(RedisTestCase):
-    DB_NAME = SessionManager.DB_NAME
+    DB = SessionManager.DB
 
     @istest
     def sets_session_id_on_cookies(self):
@@ -76,7 +76,7 @@ class SessionManagerTest(RedisTestCase):
 
         manager.set('some-object', {'foo': 'bar'})
 
-        raw_session = self.client.get(handler.session_id)
+        raw_session = self.bucket.get(handler.session_id)
         session = pickle.loads(raw_session)
 
         self.assertEqual(session['some-object']['foo'], 'bar')
@@ -117,7 +117,7 @@ class SessionManagerTest(RedisTestCase):
         manager.set('some-object2', {'foo2': 'bar2'})
         manager.delete('some-object')
 
-        raw_session = self.client.get(handler.session_id)
+        raw_session = self.bucket.get(handler.session_id)
         session = pickle.loads(raw_session)
 
         self.assertEqual(session.keys(), ['some-object2'])
@@ -132,6 +132,7 @@ class SessionManagerTest(RedisTestCase):
         self.assertEqual(manager.EXPIRE_SECONDS, one_day)
 
     @istest
+    #@skip('Too slow')
     def still_retrieves_object_if_not_passed_from_expiration(self):
         handler = StubHandler()
         manager = SessionManager(handler)
@@ -143,6 +144,7 @@ class SessionManagerTest(RedisTestCase):
         self.assertEqual(manager.get('foo'), 'bar')
 
     @istest
+    #@skip('Too slow')
     def cannot_retrieve_object_if_passed_from_expiration(self):
         handler = StubHandler()
         manager = SessionManager(handler)
@@ -169,6 +171,7 @@ class SessionManagerTest(RedisTestCase):
         handler = StubHandler()
         handler.settings = StubSettings()
         manager = SessionManager(handler)
+        manager.get('some value to setup the bucket')
 
         self.assertTrue(settings['was_retrieved'])
 

@@ -9,17 +9,15 @@ from pycket.session import SessionManager, SessionMixin
 
 
 class FunctionalTest(AsyncHTTPTestCase):
-    DB_NAME = 'pycket_sessions'
-
     bucket = None
 
     def setUp(self):
         super(FunctionalTest, self).setUp()
-        self.bucket.flushdb()
+        self.bucket.flushall()
 
     def get_app(self):
         if self.bucket is None:
-            self.bucket = redis.Redis(db=SessionManager.DB_NAME)
+            self.bucket = redis.Redis(db=SessionManager.DB)
         class SimpleHandler(RequestHandler, SessionMixin):
             def get(self):
                 self.session.set('foo', 'bar')

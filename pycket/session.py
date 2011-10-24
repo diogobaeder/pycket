@@ -9,7 +9,7 @@ because the session ID is stored in a secure manner.
 If you want to change the settings that are passed to the Redis client, set a
 "pycket_redis" dictionary with the intended Redis settings in your Tornado
 application settings. All these settings are passed to the redis.Redis client
-(except for the "db" parameter, which is always set to "pycket_sessions").
+(except for the "db" parameter, which is always set to 0).
 
 If you want to change the cookie settings passed to the handler, set a
 "pycket_cookies" setting with the items you want. This is also valid for
@@ -26,7 +26,7 @@ import redis
 class SessionManager(object):
     '''
     This is the real class that manages sessions. All session objects are
-    persisted in a Redis database, inside a bucket called "pycket_sessions".
+    persisted in a Redis database, inside db 0.
     After 1 day without changing a session, it's purged from the bucket,
     to avoid it to grow out-of-control.
 
@@ -40,8 +40,10 @@ class SessionManager(object):
     '''
 
     SESSION_ID_NAME = 'PYCKET_ID'
-    DB_NAME = 'pycket_sessions'
+    DB = 0
     EXPIRE_SECONDS = 24 * 60 * 60
+
+    bucket = None
 
     def __init__(self, handler):
         '''
@@ -49,9 +51,12 @@ class SessionManager(object):
         '''
 
         self.handler = handler
-        redis_settings = handler.settings.get('pycket_redis', {})
-        redis_settings['db'] = self.DB_NAME
-        self.bucket = redis.Redis(**redis_settings)
+
+    def __setup_bucket(self):
+        if self.bucket is None:
+            redis_settings = self.handler.settings.get('pycket_redis', {})
+            redis_settings['db'] = self.DB
+            self.bucket = redis.Redis(**redis_settings)
 
     def set(self, name, value):
         '''
@@ -95,11 +100,13 @@ class SessionManager(object):
     def __set_session_in_db(self, session):
         session_id = self.__get_session_id()
         pickled_session = pickle.dumps(session)
+        self.__setup_bucket()
         self.bucket.set(session_id, pickled_session)
         self.bucket.expire(session_id, self.EXPIRE_SECONDS)
 
     def __get_session_from_db(self):
         session_id = self.__get_session_id()
+        self.__setup_bucket()
         raw_session = self.bucket.get(session_id)
 
         return self.__to_dict(raw_session)
@@ -155,9 +162,10 @@ class SessionMixin(object):
         Returns a SessionManager instance
         '''
 
-        return self._get_manager(SessionManager)
+        return create_mixin(self, '__session_manager', SessionManager)
 
-    def _get_manager(self, manager_class):
-        if not hasattr(self, '__manager'):
-            self.__manager = manager_class(self)
-        return self.__manager
+
+def create_mixin(self, manager_property, manager_class):
+    if not hasattr(self, manager_property):
+        setattr(self, manager_property, manager_class(self))
+    return getattr(self, manager_property)
