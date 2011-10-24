@@ -30,4 +30,6 @@ setup(name='pycket',
       entry_points="""
       # -*- Entry points: -*-
       """,
-      )
+      test_suite="nose.collector",
+      tests_require="nose",
+)
