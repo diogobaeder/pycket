@@ -21,7 +21,6 @@ will override the default behaviour.
 '''
 
 from copy import copy
-import pickle
 from uuid import uuid4
 
 import redis
@@ -50,7 +49,6 @@ class SessionManager(object):
     EXPIRE_SECONDS = 24 * 60 * 60
     DB_SETTING = 'db_sessions'
 
-    dataset = None
     driver = None
 
     def __init__(self, handler):
@@ -59,7 +57,11 @@ class SessionManager(object):
         '''
 
         self.handler = handler
-        self.driver = RedisDriver(self)
+        self.__setup_driver()
+
+    def __setup_driver(self):
+        redis_settings = self.handler.settings.get('pycket_redis', {})
+        self.driver = RedisDriver(self, self.__clean_redis_settings(redis_settings))
 
     def set(self, name, value):
         '''
@@ -106,7 +108,7 @@ class SessionManager(object):
     def __getitem__(self, key):
         value = self.get(key)
         if value is None:
-            raise KeyError('%s not found in dataset' % key)
+            raise KeyError('%s not found in session' % key)
         return value
 
     def __setitem__(self, key, value):
@@ -118,13 +120,10 @@ class SessionManager(object):
 
     def __set_session_in_db(self, session):
         session_id = self.__get_session_id()
-        pickled_session = pickle.dumps(session)
-        self.__setup_dataset()
-        self.driver.set(session_id, pickled_session)
+        self.driver.set(session_id, session)
 
     def __get_session_from_db(self):
         session_id = self.__get_session_id()
-        self.__setup_dataset()
         return self.driver.get(session_id)
 
     def __get_session_id(self):
@@ -139,12 +138,6 @@ class SessionManager(object):
                                        **self.__cookie_settings())
         return session_id
 
-    def __to_dict(self, raw_session):
-        if raw_session is None:
-            return {}
-        else:
-            return pickle.loads(raw_session)
-
     def __change_session(self, callback):
         session = self.__get_session_from_db()
 
@@ -157,20 +150,10 @@ class SessionManager(object):
         cookie_settings.setdefault('expires_days', None)
         return cookie_settings
 
-    def __setup_dataset(self):
-        if self.dataset is None:
-            self.dataset = redis.Redis(**self.__redis_settings())
-            self.driver.load(self.dataset)
-
-    def __redis_settings(self):
-        redis_settings = self.handler.settings.get('pycket_redis', {})
-        redis_settings['db'] = redis_settings.get(self.DB_SETTING, self.DB)
-        return self.__clean_redis_settings(redis_settings)
-
     def __clean_redis_settings(self, redis_settings):
-        from pycket.notification import NotificationManager
+        redis_settings['db'] = redis_settings.get(self.DB_SETTING, self.DB)
         redis_settings = copy(redis_settings)
-        for custom_db_name in (SessionManager.DB_SETTING, NotificationManager.DB_SETTING):
+        for custom_db_name in ('db_sessions', 'db_notifications'):
             if custom_db_name in redis_settings.keys():
                 del redis_settings[custom_db_name]
         return redis_settings

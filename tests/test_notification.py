@@ -115,12 +115,14 @@ class NotificationManagerTest(RedisTestCase):
         }
         manager = NotificationManager(handler)
         manager.set('foo', 'bar')
-        self.assertEqual(manager.dataset.connection_pool._available_connections[0].db, 11)
+        self.assertEqual(manager.driver.dataset.connection_pool._available_connections[0].db, 11)
 
 
 class StubHandler(object):
     session_id = 'session-id'
-    settings = {}
+
+    def __init__(self, settings=None):
+        self.settings = settings if settings is not None else {}
 
     def get_secure_cookie(self, name):
         return self.session_id

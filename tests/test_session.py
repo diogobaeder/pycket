@@ -171,8 +171,7 @@ class SessionManagerTest(RedisTestCase):
                 settings['was_retrieved'] = True
                 return default
 
-        handler = StubHandler()
-        handler.settings = StubSettings()
+        handler = StubHandler(StubSettings())
         manager = SessionManager(handler)
         manager.get('some value to setup the dataset')
 
@@ -301,7 +300,7 @@ class SessionManagerTest(RedisTestCase):
         }
         manager = SessionManager(handler)
         manager.set('foo', 'bar')
-        self.assertEqual(manager.dataset.connection_pool._available_connections[0].db, 10)
+        self.assertEqual(manager.driver.dataset.connection_pool._available_connections[0].db, 10)
 
     @istest
     def deletes_multiple_session_objects_at_once(self):
@@ -384,7 +383,9 @@ class SessionManagerTest(RedisTestCase):
 
 class StubHandler(object):
     session_id = 'session-id'
-    settings = {}
+
+    def __init__(self, settings=None):
+        self.settings = settings if settings is not None else {}
 
     def get_secure_cookie(self, name):
         return self.session_id
