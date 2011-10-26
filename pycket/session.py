@@ -26,6 +26,8 @@ from uuid import uuid4
 
 import redis
 
+from pycket.driver import RedisDriver
+
 
 class SessionManager(object):
     '''
@@ -49,6 +51,7 @@ class SessionManager(object):
     DB_SETTING = 'db_sessions'
 
     dataset = None
+    driver = None
 
     def __init__(self, handler):
         '''
@@ -56,6 +59,7 @@ class SessionManager(object):
         '''
 
         self.handler = handler
+        self.driver = RedisDriver(self)
 
     def set(self, name, value):
         '''
@@ -116,15 +120,12 @@ class SessionManager(object):
         session_id = self.__get_session_id()
         pickled_session = pickle.dumps(session)
         self.__setup_dataset()
-        self.dataset.set(session_id, pickled_session)
-        self.dataset.expire(session_id, self.EXPIRE_SECONDS)
+        self.driver.set(session_id, pickled_session)
 
     def __get_session_from_db(self):
         session_id = self.__get_session_id()
         self.__setup_dataset()
-        raw_session = self.dataset.get(session_id)
-
-        return self.__to_dict(raw_session)
+        return self.driver.get(session_id)
 
     def __get_session_id(self):
         session_id = self.handler.get_secure_cookie(self.SESSION_ID_NAME)
@@ -159,6 +160,7 @@ class SessionManager(object):
     def __setup_dataset(self):
         if self.dataset is None:
             self.dataset = redis.Redis(**self.__redis_settings())
+            self.driver.load(self.dataset)
 
     def __redis_settings(self):
         redis_settings = self.handler.settings.get('pycket_redis', {})

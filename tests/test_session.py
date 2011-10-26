@@ -8,7 +8,7 @@ import redis
 from pycket.session import SessionManager, SessionMixin
 
 
-skip_slow_tests = False
+skip_slow_tests = True
 
 
 class SessionMixinTest(TestCase):
