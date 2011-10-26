@@ -20,12 +20,9 @@ the sessions expire on browser close, but, if you set them, your custom values
 will override the default behaviour.
 '''
 
-from copy import copy
 from uuid import uuid4
 
-import redis
-
-from pycket.driver import RedisDriver
+from pycket.driver import DriverFactory
 
 
 class SessionManager(object):
@@ -45,9 +42,8 @@ class SessionManager(object):
     '''
 
     SESSION_ID_NAME = 'PYCKET_ID'
-    DB = 0
     EXPIRE_SECONDS = 24 * 60 * 60
-    DB_SETTING = 'db_sessions'
+    STORAGE_CATEGORY = 'db_sessions'
 
     driver = None
 
@@ -60,8 +56,9 @@ class SessionManager(object):
         self.__setup_driver()
 
     def __setup_driver(self):
-        redis_settings = self.handler.settings.get('pycket_redis', {})
-        self.driver = RedisDriver(self, self.__clean_redis_settings(redis_settings))
+        storage_settings = self.handler.settings.get('pycket_redis', {})
+        factory = DriverFactory()
+        self.driver = factory.create('redis', storage_settings, self.STORAGE_CATEGORY)
 
     def set(self, name, value):
         '''
@@ -150,14 +147,6 @@ class SessionManager(object):
         cookie_settings.setdefault('expires_days', None)
         return cookie_settings
 
-    def __clean_redis_settings(self, redis_settings):
-        redis_settings['db'] = redis_settings.get(self.DB_SETTING, self.DB)
-        redis_settings = copy(redis_settings)
-        for custom_db_name in ('db_sessions', 'db_notifications'):
-            if custom_db_name in redis_settings.keys():
-                del redis_settings[custom_db_name]
-        return redis_settings
-
 
 class SessionMixin(object):
     '''
@@ -182,7 +171,7 @@ class SessionMixin(object):
         return create_mixin(self, '__session_manager', SessionManager)
 
 
-def create_mixin(self, manager_property, manager_class):
-    if not hasattr(self, manager_property):
-        setattr(self, manager_property, manager_class(self))
-    return getattr(self, manager_property)
+def create_mixin(context, manager_property, manager_class):
+    if not hasattr(context, manager_property):
+        setattr(context, manager_property, manager_class(context))
+    return getattr(context, manager_property)

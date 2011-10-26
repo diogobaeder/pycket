@@ -5,6 +5,7 @@ from unittest import skip, skipIf, TestCase
 from nose.tools import istest, raises
 import redis
 
+from pycket.driver import RedisDriver
 from pycket.session import SessionManager, SessionMixin
 
 
@@ -25,13 +26,11 @@ class RedisTestCase(TestCase):
 
     def setUp(self):
         if self.dataset is None:
-            self.dataset = redis.Redis(db=self.DB)
+            self.dataset = redis.Redis(db=RedisDriver.DEFAULT_STORAGE_IDENTIFIERS['db_sessions'])
         self.dataset.flushall()
 
 
 class SessionManagerTest(RedisTestCase):
-    DB = SessionManager.DB
-
     @istest
     def sets_session_id_on_cookies(self):
         test_case = self

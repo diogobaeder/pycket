@@ -5,6 +5,7 @@ from unittest import TestCase
 from nose.tools import istest
 import redis
 
+from pycket.driver import RedisDriver
 from pycket.session import SessionManager, SessionMixin
 from pycket.notification import NotificationManager, NotificationMixin
 
@@ -14,7 +15,7 @@ class RedisTestCase(TestCase):
 
     def setUp(self):
         if self.dataset is None:
-            self.dataset = redis.Redis(db=self.DB)
+            self.dataset = redis.Redis(db=RedisDriver.DEFAULT_STORAGE_IDENTIFIERS['db_notifications'])
         self.dataset.flushall()
 
 
@@ -28,11 +29,9 @@ class NotificationMixinTest(TestCase):
 
 
 class NotificationManagerTest(RedisTestCase):
-    DB = NotificationManager.DB
-
     @istest
     def persists_in_a_different_name_from_session_manager(self):
-        self.assertNotEqual(NotificationManager.DB, SessionManager.DB)
+        self.assertNotEqual(RedisDriver.DEFAULT_STORAGE_IDENTIFIERS['db_notifications'], RedisDriver.DEFAULT_STORAGE_IDENTIFIERS['db_sessions'])
 
     @istest
     def gets_a_notification_only_once(self):

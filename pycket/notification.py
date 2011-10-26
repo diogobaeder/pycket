@@ -12,8 +12,7 @@ from pycket.session import create_mixin, SessionManager, SessionMixin
 
 
 class NotificationManager(SessionManager):
-    DB = 1
-    DB_SETTING = 'db_notifications'
+    STORAGE_CATEGORY = 'db_notifications'
 
     def get(self, name, default=None):
         '''

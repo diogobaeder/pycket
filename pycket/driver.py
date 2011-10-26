@@ -6,6 +6,10 @@ import redis
 
 class RedisDriver(object):
     EXPIRE_SECONDS = 24 * 60 * 60
+    DEFAULT_STORAGE_IDENTIFIERS = {
+        'db_sessions': 0,
+        'db_notifications': 1,
+    }
 
     dataset = None
 
@@ -37,3 +41,20 @@ class RedisDriver(object):
     def __setup_dataset(self):
         if self.dataset is None:
             self.dataset = redis.Redis(**self.settings)
+
+
+class DriverFactory(object):
+    STORAGE_CATEGORIES = ('db_sessions', 'db_notifications')
+
+    def create(self, name, storage_settings, storage_category):
+        return self.create_redis(storage_settings, storage_category)
+
+    def create_redis(self, storage_settings, storage_category):
+        storage_settings = copy(storage_settings)
+        default_storage_identifier = RedisDriver.DEFAULT_STORAGE_IDENTIFIERS[storage_category]
+        storage_settings['db'] = storage_settings.get(storage_category, default_storage_identifier)
+        for storage_category in self.STORAGE_CATEGORIES:
+            if storage_category in storage_settings.keys():
+                del storage_settings[storage_category]
+
+        return RedisDriver(self, storage_settings)
