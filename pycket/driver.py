@@ -16,9 +16,6 @@ class RedisDriver(object):
     def __init__(self, settings):
         self.settings = settings
 
-    def load(self, dataset):
-        self.dataset = dataset
-
     def set(self, session_id, session):
         pickled_session = pickle.dumps(session)
         self.__setup_dataset()
@@ -46,9 +43,9 @@ class DriverFactory(object):
     STORAGE_CATEGORIES = ('db_sessions', 'db_notifications')
 
     def create(self, name, storage_settings, storage_category):
-        return self.create_redis(storage_settings, storage_category)
+        return self.__create_redis(storage_settings, storage_category)
 
-    def create_redis(self, storage_settings, storage_category):
+    def __create_redis(self, storage_settings, storage_category):
         storage_settings = copy(storage_settings)
         default_storage_identifier = RedisDriver.DEFAULT_STORAGE_IDENTIFIERS[storage_category]
         storage_settings['db'] = storage_settings.get(storage_category, default_storage_identifier)

@@ -9,7 +9,7 @@ from pycket.driver import RedisDriver
 from pycket.session import SessionManager, SessionMixin
 
 
-skip_slow_tests = True
+skip_slow_tests = False
 
 
 class SessionMixinTest(TestCase):
@@ -150,11 +150,11 @@ class SessionManagerTest(RedisTestCase):
     def cannot_retrieve_object_if_passed_from_expiration(self):
         handler = StubHandler()
         manager = SessionManager(handler)
-        manager.EXPIRE_SECONDS = 1
+        manager.driver.EXPIRE_SECONDS = 1
 
         manager.set('foo', 'bar')
 
-        time.sleep(manager.EXPIRE_SECONDS + 1)
+        time.sleep(manager.driver.EXPIRE_SECONDS + 1)
 
         self.assertIsNone(manager.get('foo'))
 
