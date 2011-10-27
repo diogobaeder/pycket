@@ -13,8 +13,7 @@ class RedisDriver(object):
 
     dataset = None
 
-    def __init__(self, manager, settings):
-        self.manager = manager
+    def __init__(self, settings):
         self.settings = settings
 
     def load(self, dataset):
@@ -57,4 +56,4 @@ class DriverFactory(object):
             if storage_category in storage_settings.keys():
                 del storage_settings[storage_category]
 
-        return RedisDriver(self, storage_settings)
+        return RedisDriver(storage_settings)
