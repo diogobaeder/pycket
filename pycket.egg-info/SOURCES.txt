@@ -1,6 +1,7 @@
 setup.cfg
 setup.py
 pycket/__init__.py
+pycket/driver.py
 pycket/notification.py
 pycket/session.py
 pycket.egg-info/PKG-INFO
