@@ -31,6 +31,9 @@ class FunctionalTest(AsyncHTTPTestCase):
             (r'/', SimpleHandler),
         ], **{
             'cookie_secret': 'Python rocks!',
+            'pycket': {
+                'engine': 'redis',
+            }
         })
 
     @istest

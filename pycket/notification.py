@@ -5,7 +5,7 @@ and that the NotificationManager ("notifications") gets an object only once, and
 deletes it from the database after retrieving;
 2. The objects are stored in db 1 (for default) instead of 0 to avoid conflicts
 with sessions. (You can change this setting with the "db_notifications" setting
-in the "pycket_redis" setting.)
+in the "storage" setting.)
 '''
 
 from pycket.session import create_mixin, SessionManager, SessionMixin

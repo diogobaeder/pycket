@@ -6,7 +6,7 @@ from nose.tools import istest, raises
 import redis
 
 from pycket.driver import RedisDriver
-from pycket.session import SessionManager, SessionMixin
+from pycket.session import ConfigurationError, SessionManager, SessionMixin
 
 
 skip_slow_tests = False
@@ -16,9 +16,33 @@ class SessionMixinTest(TestCase):
     @istest
     def starts_handler_with_session_manager(self):
         class StubHandler(SessionMixin):
-            settings = {}
+            settings = {
+                'pycket': {
+                    'engine': 'redis',
+                }
+            }
 
         self.assertIsInstance(StubHandler().session, SessionManager)
+
+    @istest
+    @raises(ConfigurationError)
+    def cannot_start_driver_without_pycket_settings(self):
+        class StubHandler(SessionMixin):
+            settings = {}
+
+        StubHandler().session.get('something')
+
+    @istest
+    @raises(ConfigurationError)
+    def cannot_start_driver_without_pycket_engine(self):
+        class StubHandler(SessionMixin):
+            settings = {
+                'pycket': {
+                    'not-an-engine': 'something-useless',
+                }
+            }
+
+        StubHandler().session.get('something')
 
 
 class RedisTestCase(TestCase):
@@ -36,7 +60,11 @@ class SessionManagerTest(RedisTestCase):
         test_case = self
 
         class StubHandler(SessionMixin):
-            settings = {}
+            settings = {
+                'pycket': {
+                    'engine': 'redis',
+                }
+            }
             def get_secure_cookie(self, name):
                 test_case.assertEqual(name, 'PYCKET_ID')
                 self.cookie_set = True
@@ -60,7 +88,11 @@ class SessionManagerTest(RedisTestCase):
         test_case = self
 
         class StubHandler(SessionMixin):
-            settings = {}
+            settings = {
+                'pycket': {
+                    'engine': 'redis',
+                }
+            }
             def get_secure_cookie(self, name):
                 self.cookie_retrieved = True
                 return 'some-id'
@@ -159,24 +191,6 @@ class SessionManagerTest(RedisTestCase):
         self.assertIsNone(manager.get('foo'))
 
     @istest
-    def repasses_pycket_redis_settings_to_client(self):
-        test_case = self
-        settings = {'was_retrieved': False}
-
-        class StubSettings(dict):
-            def get(self, name, default):
-                test_case.assertEqual(name, 'pycket_redis')
-                test_case.assertEqual(default, {})
-                settings['was_retrieved'] = True
-                return default
-
-        handler = StubHandler(StubSettings())
-        manager = SessionManager(handler)
-        manager.get('some value to setup the dataset')
-
-        self.assertTrue(settings['was_retrieved'])
-
-    @istest
     def retrieves_object_with_dict_key(self):
         handler = StubHandler()
         manager = SessionManager(handler)
@@ -216,7 +230,11 @@ class SessionManagerTest(RedisTestCase):
         test_case = self
 
         class StubHandler(SessionMixin):
-            settings = {}
+            settings = {
+                'pycket': {
+                    'engine': 'redis',
+                }
+            }
             def get_secure_cookie(self, name):
                 return None
 
@@ -234,9 +252,12 @@ class SessionManagerTest(RedisTestCase):
 
         class StubHandler(SessionMixin):
             settings = {
-                'pycket_cookies': {
-                    'foo': 'bar',
-                }
+                'pycket': {
+                    'engine': 'redis',
+                    'cookies': {
+                        'foo': 'bar',
+                    }
+                },
             }
             def get_secure_cookie(self, name):
                 return None
@@ -254,9 +275,12 @@ class SessionManagerTest(RedisTestCase):
 
         class StubHandler(SessionMixin):
             settings = {
-                'pycket_cookies': {
-                    'expires': 'St. Neversday',
-                }
+                'pycket': {
+                    'engine': 'redis',
+                    'cookies': {
+                        'expires': 'St. Neversday',
+                    }
+                },
             }
             def get_secure_cookie(self, name):
                 return None
@@ -274,9 +298,12 @@ class SessionManagerTest(RedisTestCase):
 
         class StubHandler(SessionMixin):
             settings = {
-                'pycket_cookies': {
-                    'expires_days': 'St. Neversday',
-                }
+                'pycket': {
+                    'engine': 'redis',
+                    'cookies': {
+                        'expires_days': 'St. Neversday',
+                    }
+                },
             }
             def get_secure_cookie(self, name):
                 return None
@@ -292,10 +319,13 @@ class SessionManagerTest(RedisTestCase):
     def uses_custom_sessions_database_if_provided(self):
         handler = StubHandler()
         handler.settings = {
-            'pycket_redis': {
-                'db_sessions': 10,
-                'db_notifications': 11,
-            }
+            'pycket': {
+                'engine': 'redis',
+                'storage': {
+                    'db_sessions': 10,
+                    'db_notifications': 11,
+                }
+            },
         }
         manager = SessionManager(handler)
         manager.set('foo', 'bar')
@@ -384,7 +414,12 @@ class StubHandler(object):
     session_id = 'session-id'
 
     def __init__(self, settings=None):
-        self.settings = settings if settings is not None else {}
+        default_settings = {
+            'pycket': {
+                'engine': 'redis',
+            }
+        }
+        self.settings = settings if settings is not None else default_settings
 
     def get_secure_cookie(self, name):
         return self.session_id

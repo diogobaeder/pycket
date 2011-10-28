@@ -61,10 +61,11 @@ print session['gimme'] # 'Fire!'
 ```
 
 ## Settings
-pycket understands two types of settings, which must be items in the application's settings:
+pycket understands the following application settings:
 
-1. "pycket_redis": this is a dictionary containing any items that should be repassed to the redis.Redis instance to be used in the session manager (such as "host" and "port"); Notice, however, that if you want to change the dataset numbers to be used for sessions and notifications, use "db_sessions" and "db_notifications", respectively, instead of "db" (they will be converted to the "db" parameter that is passed to the Redis client for each manager afterwards);
-2. "pycket_cookies": this is a dictionary containing all settings to be repassed to the RequestHandler.set_secure_cookie. If they don't contain "expires" or "expires_days" items, they will be set as None, which means that the default behaviour for the sessions is to last on browser session. (And deleted as soon as the user closes the browser.) Notice that the sessions in the database last for one day, though.
+1. ["pycket"]: this is the main settings dictionary for pycket. It must contain at least the "engine" name, in order to decide which backend to use.
+1. ["pycket"]["storage"]: this is a dictionary containing any items that should be repassed to the storage client to be used in the session manager (such as "host" and "port"); Notice, however, that if you want to change the dataset numbers to be used for Redis sessions and notifications, use "db_sessions" and "db_notifications", respectively, instead of "db" (they will be converted to the "db" parameter that is passed to the Redis client for each manager afterwards);
+2. ["pycket"]["cookies"]: this is a dictionary containing all settings to be repassed to the RequestHandler.set_secure_cookie. If they don't contain "expires" or "expires_days" items, they will be set as None, which means that the default behaviour for the sessions is to last on browser session. (And deleted as soon as the user closes the browser.) Notice that the sessions in the database last for one day, though.
 
 Example:
 
@@ -72,19 +73,21 @@ Example:
 application = tornado.web.Application([
     (r'/', MainHandler),
 ], **{
-    'pycket_redis': {
-        'host': 'localhost',
-        'port': 6379,
-        'db_sessions': 10,
-        'db_notifications': 11,
-    }
-    'pycket_cookies': {
-        'expires_days': 120,
+    'pycket': {
+        'storage': {
+            'host': 'localhost',
+            'port': 6379,
+            'db_sessions': 10,
+            'db_notifications': 11,
+        },
+        'cookies': {
+            'expires_days': 120,
+        }
     }
 )
 ```
 
-The default dataset numbers for sessions and notifications are, respectively, 0 and 1.
+The default dataset numbers for sessions and notifications are, respectively, 0 and 1, but in this example they've been set as 10 and 11.
 
 ## Notifications
 This feature is almost equal to the sessions, but slightly different:

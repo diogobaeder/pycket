@@ -23,7 +23,11 @@ class NotificationMixinTest(TestCase):
     @istest
     def starts_handler_with_session_manager(self):
         class StubHandler(NotificationMixin):
-            settings = {}
+            settings = {
+                'pycket': {
+                    'engine': 'redis',
+                }
+            }
 
         self.assertIsInstance(StubHandler().notifications, NotificationManager)
 
@@ -86,7 +90,11 @@ class NotificationManagerTest(RedisTestCase):
 
         class StubHandler(SessionMixin, NotificationMixin):
             session_id = 'session-id'
-            settings = {}
+            settings = {
+                'pycket': {
+                    'engine': 'redis',
+                }
+            }
 
             def get_secure_cookie(self, name):
                 return self.session_id
@@ -107,9 +115,12 @@ class NotificationManagerTest(RedisTestCase):
     def uses_custom_notifications_database_if_provided(self):
         handler = StubHandler()
         handler.settings = {
-            'pycket_redis': {
-                'db_sessions': 10,
-                'db_notifications': 11,
+            'pycket': {
+                'engine': 'redis',
+                'storage': {
+                    'db_sessions': 10,
+                    'db_notifications': 11,
+                }
             }
         }
         manager = NotificationManager(handler)
@@ -121,7 +132,12 @@ class StubHandler(object):
     session_id = 'session-id'
 
     def __init__(self, settings=None):
-        self.settings = settings if settings is not None else {}
+        default_settings = {
+            'pycket': {
+                'engine': 'redis',
+            }
+        }
+        self.settings = settings if settings is not None else default_settings
 
     def get_secure_cookie(self, name):
         return self.session_id

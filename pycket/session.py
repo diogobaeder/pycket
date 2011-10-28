@@ -4,20 +4,25 @@ SessionManager, which is the real session manager, and is referenced by the
 SessionMixin.
 
 It's mandatory that you set the "cookie_secret" in your application settings,
-because the session ID is stored in a secure manner.
+because the session ID is stored in a secure manner. It's also mandatory that
+you have a "pycket" dictionary containing at least an "engine" element that
+tells which engine you want to use.
 
-If you want to change the settings that are passed to the Redis client, set a
-"pycket_redis" dictionary with the intended Redis settings in your Tornado
-application settings. All these settings are passed to the redis.Redis client,
-except for the "db_sessions" and "db_notifications". These settings can contain
-numbers to change the datasets used for persistence, if you don't want to use
-the default numbers.
+Supported engines, for now, are:
+- Redis
+
+If you want to change the settings that are passed to the storage client, set a
+"storage" dictionary in the "pycket" settings with the intended storage settings
+in your Tornado application settings. When you're using Redis, all these
+settings are passed to the redis.Redis client, except for the "db_sessions" and
+"db_notifications". These settings can contain numbers to change the datasets
+used for persistence, if you don't want to use the default numbers.
 
 If you want to change the cookie settings passed to the handler, set a
-"pycket_cookies" setting with the items you want. This is also valid for
-"expires" and "expires_days", which, by default, will be None, therefore making
-the sessions expire on browser close, but, if you set them, your custom values
-will override the default behaviour.
+"cookies" setting in the "pycket" settings with the items you want.
+This is also valid for "expires" and "expires_days", which, by default, will be
+None, therefore making the sessions expire on browser close, but, if you set
+them, your custom values will override the default behaviour.
 '''
 
 from uuid import uuid4
@@ -53,12 +58,23 @@ class SessionManager(object):
         '''
 
         self.handler = handler
+        self.settings = {}
         self.__setup_driver()
 
     def __setup_driver(self):
-        storage_settings = self.handler.settings.get('pycket_redis', {})
+        self.__setup_settings()
+        storage_settings = self.settings.get('storage', {})
         factory = DriverFactory()
         self.driver = factory.create('redis', storage_settings, self.STORAGE_CATEGORY)
+
+    def __setup_settings(self):
+        pycket_settings = self.handler.settings.get('pycket')
+        if not pycket_settings:
+            raise ConfigurationError('The "pycket" configurations are missing')
+        engine = pycket_settings.get('engine')
+        if not engine:
+            raise ConfigurationError('You must define an engine to be used with pycket')
+        self.settings = pycket_settings
 
     def set(self, name, value):
         '''
@@ -142,7 +158,7 @@ class SessionManager(object):
         self.__set_session_in_db(session)
 
     def __cookie_settings(self):
-        cookie_settings = self.handler.settings.get('pycket_cookies', {})
+        cookie_settings = self.settings.get('cookies', {})
         cookie_settings.setdefault('expires', None)
         cookie_settings.setdefault('expires_days', None)
         return cookie_settings
@@ -169,6 +185,10 @@ class SessionMixin(object):
         '''
 
         return create_mixin(self, '__session_manager', SessionManager)
+
+
+class ConfigurationError(Exception):
+    pass
 
 
 def create_mixin(context, manager_property, manager_class):
