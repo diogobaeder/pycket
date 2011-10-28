@@ -14,6 +14,31 @@ Python requirements (included in setup script)
 * [Tornado](http://pypi.python.org/pypi/tornado) (tested with 2.1.1, installable via "tornado" package in PyPI)
 * [redis-py](http://pypi.python.org/pypi/redis/) (tested with 2.4.9, installable via "redis" package in PyPI)
 
+## Installing
+If you use virtualenv:
+
+```
+$ pip install pycket
+```
+
+If you don't and your site-packages are shared for all users in your machine:
+
+```
+$ sudo pip install pycket
+```
+
+If you don't have any idea of what pip is (shame on you!), or can't use it:
+
+```
+$ easy_install pycket
+```
+
+or, after downloading the .tar.gz/.zip package:
+
+```
+$ python setup.py install
+```
+
 ### Development requirements
 If you wish to contribute to the project as a developer, just install the requirements file included in the project with pip.
 
