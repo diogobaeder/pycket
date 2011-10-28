@@ -21,7 +21,6 @@ setup(name='pycket',
       include_package_data=True,
       zip_safe=True,
       install_requires=[
-          'redis',
           'tornado',
       ],
       entry_points="""

@@ -1,8 +1,6 @@
 from copy import copy
 import pickle
 
-import redis
-
 
 class RedisDriver(object):
     EXPIRE_SECONDS = 24 * 60 * 60
@@ -36,6 +34,7 @@ class RedisDriver(object):
 
     def __setup_dataset(self):
         if self.dataset is None:
+            import redis
             self.dataset = redis.Redis(**self.settings)
 
 
