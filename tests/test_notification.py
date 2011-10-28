@@ -11,12 +11,12 @@ from pycket.notification import NotificationManager, NotificationMixin
 
 
 class RedisTestCase(TestCase):
-    dataset = None
+    client = None
 
     def setUp(self):
-        if self.dataset is None:
-            self.dataset = redis.Redis(db=RedisDriver.DEFAULT_STORAGE_IDENTIFIERS['db_notifications'])
-        self.dataset.flushall()
+        if self.client is None:
+            self.client = redis.Redis(db=RedisDriver.DEFAULT_STORAGE_IDENTIFIERS['db_notifications'])
+        self.client.flushall()
 
 
 class NotificationMixinTest(TestCase):
@@ -54,20 +54,20 @@ class NotificationManagerTest(RedisTestCase):
 
         manager.set('foo', 'bar')
 
-        raw_notifications = self.dataset.get(handler.session_id)
+        raw_notifications = self.client.get(handler.session_id)
         notifications = pickle.loads(raw_notifications)
 
         self.assertEqual(notifications.keys(), ['foo'])
 
         manager.get('foo')
 
-        raw_notifications = self.dataset.get(handler.session_id)
+        raw_notifications = self.client.get(handler.session_id)
         notifications = pickle.loads(raw_notifications)
 
         self.assertEqual(notifications.keys(), [])
 
     @istest
-    def gets_default_value_if_provided_and_not_in_dataset(self):
+    def gets_default_value_if_provided_and_not_in_client(self):
         handler = StubHandler()
         manager = NotificationManager(handler)
 
@@ -125,7 +125,7 @@ class NotificationManagerTest(RedisTestCase):
         }
         manager = NotificationManager(handler)
         manager.set('foo', 'bar')
-        self.assertEqual(manager.driver.dataset.connection_pool._available_connections[0].db, 11)
+        self.assertEqual(manager.driver.client.connection_pool._available_connections[0].db, 11)
 
 
 class StubHandler(object):

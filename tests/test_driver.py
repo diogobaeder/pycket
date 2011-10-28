@@ -4,16 +4,16 @@ from unittest import TestCase
 from nose.tools import istest, raises
 import redis
 
-from pycket.driver import DriverFactory, RedisDriver
+from pycket.driver import DriverFactory, MemcachedDriver, RedisDriver
 
 
 class RedisTestCase(TestCase):
-    dataset = None
+    client = None
 
     def setUp(self):
-        if self.dataset is None:
-            self.dataset = redis.Redis(db=0)
-        self.dataset.flushall()
+        if self.client is None:
+            self.client = redis.Redis(db=0)
+        self.client.flushall()
 
 
 class RedisDriverTest(RedisTestCase):
@@ -25,7 +25,7 @@ class RedisDriverTest(RedisTestCase):
 
         driver.set('session-id', foo)
 
-        result = self.dataset.get('session-id')
+        result = self.client.get('session-id')
 
         self.assertEqual(pickle.loads(result), foo)
 
@@ -35,14 +35,14 @@ class RedisDriverTest(RedisTestCase):
 
         foo = dict(foo='bar')
 
-        self.dataset.set('session-id', pickle.dumps(foo))
+        self.client.set('session-id', pickle.dumps(foo))
 
         result = driver.get('session-id')
 
         self.assertEqual(result, foo)
 
     @istest
-    def makes_session_expire_in_one_day_in_the_dataset(self):
+    def makes_session_expire_in_one_day_in_the_client(self):
         driver = RedisDriver(dict(db=0))
 
         foo = dict(foo='bar')
@@ -56,9 +56,76 @@ class RedisDriverTest(RedisTestCase):
             def expire(self, session_id, expiration):
                 test_case.assertEqual(expiration, RedisDriver.EXPIRE_SECONDS)
 
-        driver.dataset = StubClient()
+        driver.client = StubClient()
 
         driver.set('session-id', foo)
+
+
+class MemcachedTestCase(TestCase):
+    client = None
+
+    def setUp(self):
+        if self.client is None:
+            import memcache
+            self.client = memcache.Client(servers=('localhost:11211',))
+        self.client.flush_all()
+
+
+class MemcachedDriverTest(MemcachedTestCase):
+    @istest
+    def inserts_pickable_object_into_session(self):
+        driver = MemcachedDriver({
+            'servers': ('localhost:11211',)
+        })
+
+        foo = dict(foo='bar')
+
+        driver.set('session-id', foo)
+
+        result = self.client.get('session-id')
+
+        self.assertEqual(pickle.loads(result), foo)
+
+    @istest
+    def retrieves_a_pickled_object_from_session(self):
+        driver = MemcachedDriver({
+            'servers': ('localhost:11211',)
+        })
+
+        foo = dict(foo='bar')
+
+        self.client.set('session-id', pickle.dumps(foo))
+
+        result = driver.get('session-id')
+
+        self.assertEqual(result, foo)
+
+    @istest
+    def makes_session_expire_in_one_day_in_the_client(self):
+        driver = MemcachedDriver({
+            'servers': ('localhost:11211',)
+        })
+
+        foo = dict(foo='bar')
+
+        test_case = self
+
+        class StubClient(object):
+            def set(self, session_id, pickled_session, expiration):
+                test_case.assertEqual(expiration, MemcachedDriver.EXPIRE_SECONDS)
+
+        driver.client = StubClient()
+
+        driver.set('session-id', foo)
+
+    @istest
+    @raises(OverflowError)
+    def fails_to_load_if_storage_settings_contain_wrong_host(self):
+        driver = MemcachedDriver({
+            'servers': ('255.255.255.255:99999',)
+        })
+
+        driver.set('session-id', 'foo')
 
 
 class DriverFactoryTest(TestCase):
@@ -70,6 +137,25 @@ class DriverFactoryTest(TestCase):
 
         self.assertIsInstance(instance, RedisDriver)
 
-        instance.get('dataset-is-lazy-loaded')
+        instance.get('client-is-lazy-loaded')
 
-        self.assertEqual(instance.dataset.connection_pool._available_connections[0].db, 0)
+        self.assertEqual(instance.client.connection_pool._available_connections[0].db, 0)
+
+    @istest
+    def creates_instance_for_memcached_session(self):
+        factory = DriverFactory()
+
+        instance = factory.create('memcached', storage_settings={}, storage_category='db_sessions')
+
+        self.assertIsInstance(instance, MemcachedDriver)
+
+        instance.get('client-is-lazy-loaded')
+
+        self.assertIsNotNone(instance.client.get_stats())
+
+    @istest
+    @raises(ValueError)
+    def cannot_create_a_driver_for_not_supported_engine(self):
+        factory = DriverFactory()
+
+        instance = factory.create('cassete-tape', storage_settings={}, storage_category='db_sessions')
