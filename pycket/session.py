@@ -47,7 +47,6 @@ class SessionManager(object):
     '''
 
     SESSION_ID_NAME = 'PYCKET_ID'
-    EXPIRE_SECONDS = 24 * 60 * 60
     STORAGE_CATEGORY = 'db_sessions'
 
     driver = None
@@ -65,7 +64,7 @@ class SessionManager(object):
         self.__setup_settings()
         storage_settings = self.settings.get('storage', {})
         factory = DriverFactory()
-        self.driver = factory.create('redis', storage_settings, self.STORAGE_CATEGORY)
+        self.driver = factory.create(self.settings.get('engine'), storage_settings, self.STORAGE_CATEGORY)
 
     def __setup_settings(self):
         pycket_settings = self.handler.settings.get('pycket')

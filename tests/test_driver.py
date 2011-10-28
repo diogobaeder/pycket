@@ -60,6 +60,14 @@ class RedisDriverTest(RedisTestCase):
 
         driver.set('session-id', foo)
 
+    @istest
+    def starts_with_1_day_to_expire_in_database(self):
+        driver = RedisDriver(dict(db=0))
+
+        one_day = 24 * 60 * 60
+
+        self.assertEqual(driver.EXPIRE_SECONDS, one_day)
+
 
 class MemcachedTestCase(TestCase):
     client = None
@@ -126,6 +134,16 @@ class MemcachedDriverTest(MemcachedTestCase):
         })
 
         driver.set('session-id', 'foo')
+
+    @istest
+    def starts_with_1_day_to_expire_in_database(self):
+        driver = MemcachedDriver({
+            'servers': ('localhost:11211',)
+        })
+
+        one_day = 24 * 60 * 60
+
+        self.assertEqual(driver.EXPIRE_SECONDS, one_day)
 
 
 class DriverFactoryTest(TestCase):

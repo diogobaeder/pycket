@@ -5,7 +5,7 @@ from unittest import skip, skipIf, TestCase
 from nose.tools import istest, raises
 import redis
 
-from pycket.driver import RedisDriver
+from pycket.driver import MemcachedDriver, RedisDriver
 from pycket.session import ConfigurationError, SessionManager, SessionMixin
 
 
@@ -43,6 +43,28 @@ class SessionMixinTest(TestCase):
             }
 
         StubHandler().session.get('something')
+
+    @istest
+    def creates_session_for_redis(self):
+        class StubHandler(SessionMixin):
+            settings = {
+                'pycket': {
+                    'engine': 'redis',
+                }
+            }
+
+        self.assertIsInstance(StubHandler().session.driver, RedisDriver)
+
+    @istest
+    def creates_session_for_memcached(self):
+        class StubHandler(SessionMixin):
+            settings = {
+                'pycket': {
+                    'engine': 'memcached',
+                }
+            }
+
+        self.assertIsInstance(StubHandler().session.driver, MemcachedDriver)
 
 
 class RedisTestCase(TestCase):
@@ -155,15 +177,6 @@ class SessionManagerTest(RedisTestCase):
         session = pickle.loads(raw_session)
 
         self.assertEqual(session.keys(), ['some-object2'])
-
-    @istest
-    def starts_with_1_day_to_expire_in_database(self):
-        handler = StubHandler()
-        manager = SessionManager(handler)
-
-        one_day = 24 * 60 * 60
-
-        self.assertEqual(manager.EXPIRE_SECONDS, one_day)
 
     @istest
     @skipIf(skip_slow_tests, 'This test is too slow')
