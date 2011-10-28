@@ -33,7 +33,7 @@ If you don't have any idea of what pip is (shame on you!), or can't use it:
 $ easy_install pycket
 ```
 
-or, after downloading the .tar.gz/.zip package:
+or, after downloading ([here](http://pypi.python.org/pypi/pycket/)) and unpacking the .tar.gz/.zip package:
 
 ```
 $ python setup.py install
