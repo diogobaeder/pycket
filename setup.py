@@ -6,13 +6,13 @@ version = '0.2.0'
 
 setup(name='pycket',
       version=version,
-      description="Redis sessions for Tornado",
-      long_description="Redis sessions for Tornado (see GitHub page for more info)",
+      description="Redis/Memcached sessions for Tornado",
+      long_description="Redis/Memcached sessions for Tornado (see GitHub page for more info)",
       classifiers=[
           'Topic :: Internet :: WWW/HTTP :: Session',
           'Topic :: Database',
           ], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-      keywords='pycket redis tornado session python',
+      keywords='pycket redis memcached tornado session python',
       author='Diogo Baeder',
       author_email='desenvolvedor@diogobaeder.com.br',
       url='https://github.com/diogobaeder/pycket',
