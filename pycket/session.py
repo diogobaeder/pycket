@@ -10,6 +10,7 @@ tells which engine you want to use.
 
 Supported engines, for now, are:
 - Redis
+- Memcache
 
 If you want to change the settings that are passed to the storage client, set a
 "storage" dictionary in the "pycket" settings with the intended storage settings
@@ -21,8 +22,8 @@ used for persistence, if you don't want to use the default numbers.
 If you want to change the cookie settings passed to the handler, set a
 "cookies" setting in the "pycket" settings with the items you want.
 This is also valid for "expires" and "expires_days", which, by default, will be
-None, therefore making the sessions expire on browser close, but, if you set
-them, your custom values will override the default behaviour.
+None, therefore making the sessions expire on browser close, but, if you set one
+of them, your custom value will override the default behaviour.
 '''
 
 from uuid import uuid4
@@ -33,8 +34,8 @@ from pycket.driver import DriverFactory
 class SessionManager(object):
     '''
     This is the real class that manages sessions. All session objects are
-    persisted in a Redis database, inside db 0.
-    After 1 day without changing a session, it's purged from the dataset,
+    persisted in a Redis or Memcache store (depending on your settings).
+    After 1 day without changing a session, it's purged from the datastore,
     to avoid it to grow out-of-control.
 
     When a session is started, a cookie named 'PYCKET_ID' is set, containing the

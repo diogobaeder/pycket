@@ -1,8 +1,16 @@
+'''
+This module is for internal use, only. It contains datastore drivers to be used
+with the session and notification managers.
+'''
 from copy import copy
 import pickle
 
 
 class Driver(object):
+    EXPIRE_SECONDS = 24 * 60 * 60
+
+    client = None
+
     def _to_dict(self, raw_session):
         if raw_session is None:
             return {}
@@ -27,13 +35,10 @@ class Driver(object):
 
 
 class RedisDriver(Driver):
-    EXPIRE_SECONDS = 24 * 60 * 60
     DEFAULT_STORAGE_IDENTIFIERS = {
         'db_sessions': 0,
         'db_notifications': 1,
     }
-
-    client = None
 
     def __init__(self, settings):
         self.settings = settings
@@ -48,10 +53,6 @@ class RedisDriver(Driver):
 
 
 class MemcachedDriver(Driver):
-    EXPIRE_SECONDS = 24 * 60 * 60
-
-    client = None
-
     def __init__(self, settings):
         self.settings = settings
 
