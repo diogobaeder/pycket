@@ -146,5 +146,31 @@ This feature is almost equal to the sessions, but slightly different:
 * The default Redis dataset used is 1, instead of 0, to avoid conflicts with normal sessions.
 * Unfortunately, for Memcached, the notifications are saved in the same datastore as the sessions, because I still didn't find a way keep them in a separate datastore.
 
+## Connection pooling (Redis)
+(Thanks [@whardier](https://github.com/whardier) for this hint! :-)
+
+It's also possible to pass a Redis connection pool to the storage backend, so that you avoid having an open connection for each Redis access.
+
+Suppose you want to keep only one open connection, you can do something like this:
+
+```python
+pycket_pool = redis.ConnectionPool(max_connections=1, host='localhost', port=6379)
+#...
+            **{
+                'pycket': {
+                    'engine': 'redis',
+                    'storage': {
+                        'connection_pool': pycket_pool,
+                        'db_sessions': 10,
+                        'db_notifications': 11,
+                    },
+                    'cookies': {
+                        'expires_days': 120,
+                    },
+                },
+            }
+#...
+```
+
 ## Author
 This module was developed by Diogo Baeder (*/diogobaeder), who is an absolute Python lover, and is currently in love with event-driven programming and ArchLinux.
