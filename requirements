@@ -1,3 +1,4 @@
+coverage==3.5.1
 nose==1.1.2
 python-memcached==1.47
 redis==2.4.9
