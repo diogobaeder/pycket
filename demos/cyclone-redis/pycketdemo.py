@@ -1,20 +1,10 @@
-#!/usr/bin/env python
-# coding: utf-8
-#
-# Copyright 2010 Alexandre Fiori
-# based on the original Tornado by Facebook
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); you may
-# not use this file except in compliance with the License. You may obtain
-# a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations
-# under the License.
+"""
+Cyclone Redis Demo
+
+This demonstrates integrating pycket with cyclone, using a redis
+backend (but easily switched to using memcached).
+
+"""
 
 import sys
 
@@ -44,11 +34,11 @@ class Application(cyclone.web.Application):
         settings['pycket'] = {
             'engine': 'redis',
             'storage': {
-                'host' : 'localhost',
-                'port' : 6379,
-                'db_sessions' : 10,
-                'db_notifications' : 11,
-                }
+                'host': 'localhost',
+                'port': 6379,
+                'db_sessions': 10,
+                'db_notifications': 11
+            }
         }
 
         cyclone.web.Application.__init__(self, handlers, **settings)
@@ -73,13 +63,17 @@ class MainHandler(BaseHandler):
 class AuthHandler(BaseHandler, SessionMixin):
 
     def get(self):
-        self.write('<form method="post">Enter your username: <input name="username" type="text"><button type="submit" class="btn">Login</button></form>')
-
+        self.write('<form method="post">'
+                   'Enter your username: <input name="username" type="text">'
+                   '<button type="submit" class="btn">Login</button></form>')
 
     def post(self):
         username = self.get_argument('username')
         if not username:
-            self.write('<form method="post">Enter your username: <input name="username" type="text"><button type="submit" class="btn">Login</button></form>')
+            self.write('<form method="post">Enter your username: '
+                       '<input name="username" type="text">'
+                       '<button type="submit" class="btn">Login</button>'
+                       '</form>')
         else:
             self.session.set('user', username)
             self.redirect('/')
