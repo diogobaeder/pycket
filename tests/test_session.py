@@ -1,6 +1,6 @@
 import pickle
 import time
-from unittest import skip, skipIf, TestCase
+from unittest import skipIf, TestCase
 
 from nose.tools import istest, raises
 import redis
@@ -87,6 +87,7 @@ class SessionManagerTest(RedisTestCase):
                     'engine': 'redis',
                 }
             }
+
             def get_secure_cookie(self, name):
                 test_case.assertEqual(name, 'PYCKET_ID')
                 self.cookie_set = True
@@ -107,14 +108,13 @@ class SessionManagerTest(RedisTestCase):
 
     @istest
     def does_not_set_session_id_if_already_exists(self):
-        test_case = self
-
         class StubHandler(SessionMixin):
             settings = {
                 'pycket': {
                     'engine': 'redis',
                 }
             }
+
             def get_secure_cookie(self, name):
                 self.cookie_retrieved = True
                 return 'some-id'
@@ -248,6 +248,7 @@ class SessionManagerTest(RedisTestCase):
                     'engine': 'redis',
                 }
             }
+
             def get_secure_cookie(self, name):
                 return None
 
@@ -272,6 +273,7 @@ class SessionManagerTest(RedisTestCase):
                     }
                 },
             }
+
             def get_secure_cookie(self, name):
                 return None
 
@@ -295,6 +297,7 @@ class SessionManagerTest(RedisTestCase):
                     }
                 },
             }
+
             def get_secure_cookie(self, name):
                 return None
 
@@ -318,6 +321,7 @@ class SessionManagerTest(RedisTestCase):
                     }
                 },
             }
+
             def get_secure_cookie(self, name):
                 return None
 
@@ -388,7 +392,7 @@ class SessionManagerTest(RedisTestCase):
         manager.set('foo', 'FOO')
         manager.set('bar', 'BAR')
 
-        self.assertListEqual(manager.keys(), ['foo', 'bar'])
+        self.assertListEqual(sorted(manager.keys()), sorted(['foo', 'bar']))
 
     @istest
     def iterates_with_method_over_keys(self):

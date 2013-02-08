@@ -1,12 +1,10 @@
-import pickle
-
 from nose.tools import istest
 import redis
 from tornado.testing import AsyncHTTPTestCase
 from tornado.web import Application, RequestHandler
 
 from pycket.driver import RedisDriver
-from pycket.session import SessionManager, SessionMixin
+from pycket.session import SessionMixin
 
 
 class FunctionalTest(AsyncHTTPTestCase):
@@ -19,6 +17,7 @@ class FunctionalTest(AsyncHTTPTestCase):
     def get_app(self):
         if self.dataset is None:
             self.dataset = redis.Redis(db=RedisDriver.DEFAULT_STORAGE_IDENTIFIERS['db_sessions'])
+
         class SimpleHandler(RequestHandler, SessionMixin):
             def get(self):
                 self.session.set('foo', 'bar')

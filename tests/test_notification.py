@@ -1,12 +1,11 @@
 import pickle
-import time
 from unittest import TestCase
 
 from nose.tools import istest
 import redis
 
 from pycket.driver import RedisDriver
-from pycket.session import SessionManager, SessionMixin
+from pycket.session import SessionMixin
 from pycket.notification import NotificationManager, NotificationMixin
 
 

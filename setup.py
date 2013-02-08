@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
-import sys, os
 
 version = '0.2.0'
 
@@ -8,10 +7,9 @@ setup(name='pycket',
       version=version,
       description="Redis/Memcached sessions for Tornado",
       long_description="Redis/Memcached sessions for Tornado (see GitHub page for more info)",
-      classifiers=[
-          'Topic :: Internet :: WWW/HTTP :: Session',
-          'Topic :: Database',
-          ], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+      classifiers=['Topic :: Internet :: WWW/HTTP :: Session',
+                   'Topic :: Database',
+                   ],
       keywords='pycket redis memcached tornado session python',
       author='Diogo Baeder',
       author_email='desenvolvedor@diogobaeder.com.br',
@@ -28,4 +26,4 @@ setup(name='pycket',
       """,
       test_suite="nose.collector",
       tests_require="nose",
-)
+      )

@@ -176,4 +176,4 @@ class DriverFactoryTest(TestCase):
     def cannot_create_a_driver_for_not_supported_engine(self):
         factory = DriverFactory()
 
-        instance = factory.create('cassete-tape', storage_settings={}, storage_category='db_sessions')
+        factory.create('cassete-tape', storage_settings={}, storage_category='db_sessions')
