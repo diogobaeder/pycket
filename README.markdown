@@ -1,6 +1,9 @@
 # pycket
 This is a session library, written for use with Redis or Memcached, and Tornado web server.
 
+## Status of the project
+[![Build Status](https://secure.travis-ci.org/diogobaeder/pycket.png)](http://travis-ci.org/diogobaeder/pycket)
+
 ## License
 This software is under BSD 2-Clause License (see LICENSE file)
 
