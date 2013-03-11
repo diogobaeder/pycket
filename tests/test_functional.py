@@ -42,6 +42,6 @@ class FunctionalTest(AsyncHTTPTestCase):
         response = self.fetch('/')
 
         self.assertEqual(response.code, 200)
-        self.assertIn('bar', response.body)
+        self.assertIn('bar', str(response.body))
 
         self.assertEqual(len(self.dataset.keys()), 1)

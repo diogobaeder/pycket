@@ -56,14 +56,14 @@ class NotificationManagerTest(RedisTestCase):
         raw_notifications = self.client.get(handler.session_id)
         notifications = pickle.loads(raw_notifications)
 
-        self.assertEqual(notifications.keys(), ['foo'])
+        self.assertEqual(list(notifications.keys()), ['foo'])
 
         manager.get('foo')
 
         raw_notifications = self.client.get(handler.session_id)
         notifications = pickle.loads(raw_notifications)
 
-        self.assertEqual(notifications.keys(), [])
+        self.assertEqual(list(notifications.keys()), [])
 
     @istest
     def gets_default_value_if_provided_and_not_in_client(self):

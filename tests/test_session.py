@@ -95,7 +95,7 @@ class SessionManagerTest(RedisTestCase):
 
             def set_secure_cookie(self, name, value, expires_days, expires):
                 test_case.assertEqual(name, 'PYCKET_ID')
-                test_case.assertIsInstance(value, basestring)
+                test_case.assertIsInstance(value, str)
                 test_case.assertGreater(len(value), 0)
                 self.cookie_retrieved = True
 
@@ -176,7 +176,7 @@ class SessionManagerTest(RedisTestCase):
         raw_session = self.client.get(handler.session_id)
         session = pickle.loads(raw_session)
 
-        self.assertEqual(session.keys(), ['some-object2'])
+        self.assertEqual(list(session.keys()), ['some-object2'])
 
     @istest
     @skipIf(skip_slow_tests, 'This test is too slow')
@@ -360,7 +360,7 @@ class SessionManagerTest(RedisTestCase):
         raw_session = self.client.get(handler.session_id)
         session = pickle.loads(raw_session)
 
-        self.assertEqual(session.keys(), [])
+        self.assertEqual(list(session.keys()), [])
 
     @istest
     def deletes_item_using_command(self):
