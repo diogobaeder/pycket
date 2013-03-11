@@ -20,3 +20,6 @@ install:
 	-@[ -f $(EXTENDED_REQUIREMENTS) ] && pip install -r $(EXTENDED_REQUIREMENTS) --use-mirrors || \
 		echo File "$(EXTENDED_REQUIREMENTS)" doesn\'t exist, skipping version-specific packages
 	@echo Finished installing dependencies.
+
+release:
+	python setup.py sdist upload

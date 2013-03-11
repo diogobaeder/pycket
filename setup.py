@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-version = '0.2.0'
+version = '0.3.0'
 
 setup(name='pycket',
       version=version,
@@ -12,7 +12,7 @@ setup(name='pycket',
                    ],
       keywords='pycket redis memcached tornado session python',
       author='Diogo Baeder',
-      author_email='desenvolvedor@diogobaeder.com.br',
+      author_email='contato@diogobaeder.com.br',
       url='https://github.com/diogobaeder/pycket',
       license='BSD 2-Clause',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
