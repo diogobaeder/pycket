@@ -1,8 +1,8 @@
 test:
-	@env PYTHONHASHSEED=random PYTHONPATH=. nosetests --with-coverage --cover-package=pycket --cover-erase --with-yanc --with-xtraceback --cover-min-percentage=100 tests/
+	@env PYTHONHASHSEED=random PYTHONPATH=. nosetests tests/
 
 lint:
 	@echo Running syntax check...
-	@flake8 . --ignore=E501
+	@flake8 . --ignore=E501 --max-complexity 10
 
 build: test lint

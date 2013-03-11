@@ -1,9 +1,12 @@
 Pygments==1.6
 argparse==1.2.1
 coverage==3.6
-flake8==1.7.0
+flake8==2.0
+mccabe==0.2
 nose==1.2.1
 nose-notify==0.4.2
+pep8==1.4.5
+pyflakes==0.6.1
 python-memcached==1.48
 redis==2.7.2
 termcolor==1.0.1
