@@ -68,6 +68,13 @@ class RedisDriverTest(RedisTestCase):
 
         self.assertEqual(driver.EXPIRE_SECONDS, one_day)
 
+    @istest
+    def starts_with_max_connections(self):
+        driver = RedisDriver(dict(db=0, max_connections=123))
+        driver.get('some session')
+
+        self.assertEqual(driver.client.connection_pool.max_connections, 123)
+
 
 class MemcachedTestCase(TestCase):
     client = None
