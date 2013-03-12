@@ -14,12 +14,14 @@ Non-Python requirements:
 
 Python requirements (included in setup script)
 
-* [Tornado](http://pypi.python.org/pypi/tornado/) (tested with 2.1.1, installable via "tornado" package in PyPI)
+* Python 2.7, 3.2 or 3.3 (2.6 and 3.1 or lower are not supported, though they might work)
+* [Tornado](http://pypi.python.org/pypi/tornado/) (tested with 2.1.1/2.4.1, installable via "tornado" package in PyPI)
 
 Python requirements (not included, because depend on the datastore that you wish to use)
 
-* [redis-py](http://pypi.python.org/pypi/redis/) (tested with 2.4.9, installable via "redis" package in PyPI)
-* [python-memcached](http://pypi.python.org/pypi/python-memcached/) (tested with 1.47, installable via "python-memcached" package in PyPI)
+* For Redis: [redis-py](http://pypi.python.org/pypi/redis/) (tested with 2.4.9/2.7.2, installable via "redis" package in PyPI)
+* For Memcached on Python 2: [python-memcached](http://pypi.python.org/pypi/python-memcached/) (tested with 1.47/1.48, installable via "python-memcached" package in PyPI)
+* For Memcached on Python 3: [python3-memcached](http://pypi.python.org/pypi/python3-memcached/) (tested with 1.44, installable via "python3-memcached" package in PyPI)
 
 ## Installing
 If you use virtualenv:
@@ -93,14 +95,33 @@ print session['gimme'] # 'Fire!'
 ```
 
 ## Settings
-pycket understands two types of settings, which must be items in the application's settings:
 
-1. ["pycket"]: the base settings dictionary for pycket;
-2. ["pycket"]["engine"]: the only mandatory setting. Must be "redis" or "memcached";
-1. ["pycket"]["storage"]: this is a dictionary containing any items that should be repassed to the redis.Redis or memcached.Client to be used in the session manager (such as "host", "port", "servers" etc); Notice that for Redis, however, that if you want to change the dataset numbers to be used for sessions and notifications, use "db_sessions" and "db_notifications", respectively, instead of "db" (they will be converted to the "db" parameter that is passed to the Redis client for each manager afterwards);
-2. ["pycket"]["cookies"]: this is a dictionary containing all settings to be repassed to the RequestHandler.set_secure_cookie. If they don't contain "expires" or "expires_days" items, they will be set as None, which means that the default behaviour for the sessions is to last on browser session. (And deleted as soon as the user closes the browser.) Notice that the sessions in the database last for one day, though.
+### Mandatory settings
+pycket understands these types of settings, which must be items in the application's settings:
 
-Example using Redis:
+1. `["pycket"]`: the base settings dictionary for pycket;
+1. `["pycket"]["engine"]`: the only mandatory setting. Must be "redis" or "memcached";
+1. `["pycket"]["storage"]`: this is a dictionary containing any items that should be repassed to the redis.Redis or
+   memcached.Client to be used in the session manager (such as "host", "port", "servers" etc); Notice that for Redis,
+   however, that if you want to change the dataset numbers to be used for sessions and notifications, use "db_sessions"
+   and "db_notifications", respectively, instead of "db" (they will be converted to the "db" parameter that is passed to
+   the Redis client for each manager afterwards);
+1. `["pycket"]["cookies"]`: this is a dictionary containing all settings to be repassed to the
+   RequestHandler.set_secure_cookie. If they don't contain "expires" or "expires_days" items, they will be set as None,
+   which means that the default behaviour for the sessions is to last on browser session. (And deleted as soon as the
+   user closes the browser.) Notice that the sessions in the database last for one day, though.
+
+### Optional settings
+You can also use these settings.
+
+1. `["pycket"]["storage"]["db_sessions"]` (Redis-only): Dataset to be used for session data;
+1. `["pycket"]["storage"]["db_notifications"]` (Redis-only): Dataset to be used for notification data;
+1. `["pycket"]["storage"]["max_connections"]` (Redis-only): Maximum connections; If not passed, pycket will use simple
+   connections instead of pooling, which may hog your system resources and crash because of the file descriptor limits.
+
+## Examples
+
+### Example using Redis
 
 ```python
 application = tornado.web.Application([
@@ -113,6 +134,7 @@ application = tornado.web.Application([
             'port': 6379,
             'db_sessions': 10,
             'db_notifications': 11,
+            'max_connections': 2 ** 31,
         },
         'cookies': {
             'expires_days': 120,
@@ -121,7 +143,7 @@ application = tornado.web.Application([
 )
 ```
 
-Example using Memcached:
+### Example using Memcached
 
 ```python
 application = tornado.web.Application([
@@ -139,7 +161,8 @@ application = tornado.web.Application([
 )
 ```
 
-The default Redis dataset numbers for sessions and notifications are, respectively, 0 and 1, and the default Memcached servers tuple is ("localhost:11211",)
+The default Redis dataset numbers for sessions and notifications are, respectively, 0 and 1, and the default Memcached
+servers tuple is ("localhost:11211",)
 
 ## Notifications
 This feature is almost equal to the sessions, but slightly different:
@@ -150,30 +173,8 @@ This feature is almost equal to the sessions, but slightly different:
 * Unfortunately, for Memcached, the notifications are saved in the same datastore as the sessions, because I still didn't find a way keep them in a separate datastore.
 
 ## Connection pooling (Redis)
-(Thanks [@whardier](https://github.com/whardier) for this hint! :-)
-
-It's also possible to pass a Redis connection pool to the storage backend, so that you avoid having an open connection for each Redis access.
-
-Suppose you want to keep only one open connection, you can do something like this:
-
-```python
-pycket_pool = redis.ConnectionPool(max_connections=1, host='localhost', port=6379)
-#...
-            **{
-                'pycket': {
-                    'engine': 'redis',
-                    'storage': {
-                        'connection_pool': pycket_pool,
-                        'db_sessions': 10,
-                        'db_notifications': 11,
-                    },
-                    'cookies': {
-                        'expires_days': 120,
-                    },
-                },
-            }
-#...
-```
+As noted earlier, you can imply the usage of connection pools by using the `["pycket"]["storage"]["max_connections"]` 
+setting. If you use it, pycket will create two connection pools - one for the sessions, and one for the notifications -.
 
 ## Author
 This module was developed by Diogo Baeder (*/diogobaeder), who is an absolute Python lover, and is currently in love with event-driven programming and ArchLinux.
