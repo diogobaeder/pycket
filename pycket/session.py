@@ -25,7 +25,7 @@ This is also valid for "expires" and "expires_days", which, by default, will be
 None, therefore making the sessions expire on browser close, but, if you set one
 of them, your custom value will override the default behaviour.
 '''
-
+import copy
 from uuid import uuid4
 
 from pycket.driver import DriverFactory
@@ -52,7 +52,7 @@ class SessionManager(object):
 
     driver = None
 
-    def __init__(self, handler):
+    def __init__(self, handler, domain=None):
         '''
         Expects a tornado.web.RequestHandler
         '''
@@ -60,6 +60,8 @@ class SessionManager(object):
         self.handler = handler
         self.settings = {}
         self.__setup_driver()
+        self.__session_id = None
+        self.domain = domain
 
     def __setup_driver(self):
         self.__setup_settings()
@@ -142,13 +144,18 @@ class SessionManager(object):
     def __get_session_id(self):
         session_id = self.handler.get_secure_cookie(self.SESSION_ID_NAME)
         if session_id is None:
-            session_id = self.__create_session_id()
+            if self.__session_id is None:
+                session_id = self.__create_session_id()
+                self.__session_id = session_id
+            else:
+                session_id = self.__session_id
         return session_id
 
     def __create_session_id(self):
         session_id = str(uuid4())
-        self.handler.set_secure_cookie(self.SESSION_ID_NAME, session_id,
-                                       **self.__cookie_settings())
+        self.handler.set_secure_cookie(
+            self.SESSION_ID_NAME, session_id, **self.__cookie_settings()
+        )
         return session_id
 
     def __change_session(self, callback):
@@ -158,9 +165,10 @@ class SessionManager(object):
         self.__set_session_in_db(session)
 
     def __cookie_settings(self):
-        cookie_settings = self.settings.get('cookies', {})
+        cookie_settings = copy.deepcopy(self.settings.get('cookies', {}))
         cookie_settings.setdefault('expires', None)
         cookie_settings.setdefault('expires_days', None)
+        cookie_settings.setdefault('domain', self.domain)
         return cookie_settings
 
 

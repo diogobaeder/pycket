@@ -3,7 +3,11 @@ This module is for internal use, only. It contains datastore drivers to be used
 with the session and notification managers.
 '''
 from copy import copy
-import pickle
+import zlib
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 
 class Driver(object):
@@ -24,13 +28,20 @@ class Driver(object):
     def get(self, session_id):
         self._setup_client()
         raw_session = self.client.get(session_id)
-
+        if raw_session:
+            try:
+                raw_session = zlib.decompress(raw_session)
+            except:
+                pass
         return self._to_dict(raw_session)
 
     def set(self, session_id, session):
         pickled_session = pickle.dumps(session)
         self._setup_client()
-
+        try:
+            pickled_session = zlib.compress(pickled_session)
+        except:
+            pass
         self._set_and_expire(session_id, pickled_session)
 
 
