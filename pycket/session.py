@@ -60,7 +60,7 @@ class SessionManager(object):
         self.handler = handler
         self.settings = {}
         self.__setup_driver()
-        self.handler.__hn_session_id = None
+        self.__session_id = None
         self.domain = domain
 
     def __setup_driver(self):
@@ -144,11 +144,11 @@ class SessionManager(object):
     def __get_session_id(self):
         session_id = self.handler.get_secure_cookie(self.SESSION_ID_NAME)
         if session_id is None:
-            if self.handler.__hn_session_id is None:
+            if self.__session_id is None:
                 session_id = self.__create_session_id()
-                self.handler.__hn_session_id = session_id
+                self.__session_id = session_id
             else:
-                session_id = self.handler.__hn_session_id
+                session_id = self.__session_id
         return session_id
 
     def __create_session_id(self):
