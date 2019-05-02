@@ -1,3 +1,7 @@
+**DISCONTINUED**
+
+This library is not maintained anymore, hence won't receive any further support.
+
 # pycket
 This is a session library, written for use with Redis or Memcached, and Tornado web server.
 
